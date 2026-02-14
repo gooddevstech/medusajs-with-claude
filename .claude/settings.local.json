@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker exec:*)",
+      "Bash(src/admin/i18n/index.ts:*)",
+      "Bash(yarn docker:up)",
+      "Bash(docker network prune:*)",
+      "Bash(docker compose up:*)",
+      "Bash(docker rm:*)",
+      "Bash(docker compose run:*)",
+      "Bash(git clone:*)",
+      "Bash(storefront/Dockerfile:*)",
+      "Bash(Dockerfile:*)",
+      "Bash(storefront/.env.local:*)",
+      "Bash(docker compose exec:*)",
+      "Bash(create-publishable-key.sh:*)",
+      "Bash(__NEW_LINE_546d722cfe287f48__ chmod +x create-publishable-key.sh)",
+      "Bash(./create-publishable-key.sh:*)",
+      "Bash(src/scripts/create-publishable-key.ts:*)",
+      "Bash(__NEW_LINE_6932108a813e6cdc__ docker compose exec medusa yarn medusa exec ./src/scripts/create-publishable-key.ts)",
+      "Bash(docker compose restart:*)",
+      "Bash(curl:*)",
+      "Bash(gh:*)",
+      "Bash(git remote remove:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git submodule:*)",
+      "Bash(git rm:*)"
+    ]
+  }
+}
