@@ -1,254 +1,202 @@
-# Research Codebase Command
-
-Research and document the MedusaJS e-commerce codebase thoroughly and accurately.
-
+---
+description: Document codebase as-is without evaluation or recommendations
+model: opus
 ---
 
-## Your Mission
+# Research Codebase
 
-**YOUR ONLY JOB IS TO DOCUMENT AND EXPLAIN THE CODEBASE AS IT EXISTS TODAY.**
+You are tasked with conducting comprehensive research across the codebase to answer user questions by spawning parallel sub-agents and synthesizing their findings.
 
-Do NOT:
-- ❌ Suggest improvements
-- ❌ Critique the implementation
-- ❌ Identify problems or bugs (unless explicitly asked)
-- ❌ Propose refactoring
-- ❌ Analyze root causes
-- ❌ Make recommendations
+## CRITICAL: YOUR ONLY JOB IS TO DOCUMENT AND EXPLAIN THE CODEBASE AS IT EXISTS TODAY
 
-**You are a technical documentarian, not a consultant.**
+- DO NOT suggest improvements or changes unless the user explicitly asks for them
+- DO NOT perform root cause analysis unless the user explicitly asks for them
+- DO NOT propose future enhancements unless the user explicitly asks for them
+- DO NOT critique the implementation or identify problems
+- DO NOT recommend refactoring, optimization, or architectural changes
+- ONLY describe what exists, where it exists, how it works, and how components interact
+- You are creating a technical map/documentation of the existing system
 
----
+## Initial Setup:
 
-## Research Process
+When this command is invoked, respond with:
 
-### 1. Read Directly-Mentioned Files First
-If the user mentions specific files, read them COMPLETELY before spawning sub-tasks.
-
-```bash
-# Example
-User: "Research how cart checkout works in cart/page.tsx"
-→ Read storefront/src/app/[countryCode]/(main)/cart/page.tsx FIRST
-→ Then spawn sub-tasks for deeper investigation
+```
+I'm ready to research the codebase. Please provide your research question or area of interest, and I'll analyze it thoroughly by exploring relevant components and connections.
 ```
 
-### 2. Decompose the Question
-Break down complex research questions into composable areas:
+Then wait for the user's research query.
 
-**Example breakdown** for "How does checkout work?":
-1. Frontend checkout flow (storefront)
-2. Backend order processing (API)
-3. Payment integration
-4. Database transactions
-5. Email notifications
+## Steps to follow after receiving the research query:
 
-### 3. Deploy Parallel Sub-Tasks
-Spawn specialized agents in parallel for efficiency:
+1. **Read any directly mentioned files first:**
+   - If the user mentions specific files (docs, JSON), read them FULLY first
+   - **IMPORTANT**: Use the Read tool WITHOUT limit/offset parameters to read entire files
+   - **CRITICAL**: Read these files yourself in the main context before spawning any sub-tasks
+   - This ensures you have full context before decomposing the research
 
-```markdown
-Use Task tool with:
-- subagent_type: "Explore"
-- description: "Find checkout components"
-- prompt: "Locate all files related to checkout process"
+2. **Analyze and decompose the research question:**
+   - Break down the user's query into composable research areas
+   - Take time to ultrathink about the underlying patterns, connections, and architectural implications the user might be seeking
+   - Identify specific components, patterns, or concepts to investigate
+   - Create a research plan using TodoWrite to track all subtasks
+   - Consider which directories, files, or architectural patterns are relevant
 
-Use Task tool with:
-- subagent_type: "Explore"
-- description: "Analyze payment flow"
-- prompt: "Trace payment processing from cart completion to order confirmation"
-```
+3. **Spawn parallel sub-agent tasks for comprehensive research:**
+   - Create multiple Task agents to research different aspects concurrently
+   - We now have specialized agents that know how to do specific research tasks:
 
-**Available agent types:**
-- **codebase-locator**: Find WHERE code lives
-- **codebase-analyzer**: Understand HOW code works
-- **codebase-pattern-finder**: Find examples and patterns
-- **web-search-researcher**: External research (use sparingly)
+   **For codebase research:**
+   - Use the **codebase-locator** agent to find WHERE files and components live
+   - Use the **codebase-analyzer** agent to understand HOW specific code works (without critiquing it)
+   - Use the **codebase-pattern-finder** agent to find examples of existing patterns (without evaluating them)
 
-### 4. Synthesize Findings
-Combine results from all sub-tasks:
-- Provide specific file paths and line numbers
-- Show code snippets with context
-- Explain connections between components
-- Document data flow
+   **IMPORTANT**: All agents are documentarians, not critics. They will describe what exists without suggesting improvements or identifying issues.
 
-### 5. Gather Metadata
-Include git and repository information:
-```bash
-git log -1 --format="%H %ai"  # Latest commit
-git rev-parse --abbrev-ref HEAD  # Current branch
-git config --get remote.origin.url  # Repository URL
-```
+   **For web research (only if user explicitly asks):**
+   - Use the **web-search-researcher** agent for external documentation and resources
+   - IF you use web-research agents, instruct them to return LINKS with their findings, and please INCLUDE those links in your final report
 
-### 6. Generate Research Document
-Create timestamped markdown with YAML frontmatter:
+   **For Linear tickets (if relevant):**
+   - Use the **linear-ticket-reader** agent to get full details of a specific ticket
+   - Use the **linear-searcher** agent to find related tickets or historical context
 
-```markdown
----
-date: 2026-02-14
-researcher: Claude Sonnet 4.5
-commit: abc123def456
-branch: main
-repository: gooddevstech/medusajs-with-claude
-topic: "Checkout Process Analysis"
-tags: ["checkout", "payment", "orders"]
-status: complete
----
+   The key is to use these agents intelligently:
+   - Start with locator agents to find what exists
+   - Then use analyzer agents on the most promising findings to document how they work
+   - Run multiple agents in parallel when they're searching for different things
+   - Each agent knows its job - just tell it what you're looking for
+   - Don't write detailed prompts about HOW to search - the agents already know
+   - Remind agents they are documenting, not evaluating or improving
 
-# Research: Checkout Process
+4. **Wait for all sub-agents to complete and synthesize findings:**
+   - IMPORTANT: Wait for ALL sub-agent tasks to complete before proceeding
+   - Compile all sub-agent results
+   - Prioritize live codebase findings as primary source of truth
+   - Connect findings across different components
+   - Include specific file paths and line numbers for reference
+   - Highlight patterns, connections, and architectural decisions
+   - Answer the user's specific questions with concrete evidence
 
-## Summary
-[High-level overview of findings]
+5. **Gather metadata for the research document:**
+   - Run Bash() tools to generate all relevant metadata
+   - Filename: `thoughts/shared/research/YYYY-MM-DD-ENG-XXXX-description.md`
+     - Format: `YYYY-MM-DD-ENG-XXXX-description.md` where:
+       - YYYY-MM-DD is today's date
+       - ENG-XXXX is the ticket number (omit if no ticket)
+       - description is a brief kebab-case description of the research topic
+     - Examples:
+       - With ticket: `2025-01-08-ENG-1478-parent-child-tracking.md`
+       - Without ticket: `2025-01-08-authentication-flow.md`
 
-## Key Findings
+6. **Generate research document:**
+   - Use the metadata gathered in step 4
+   - Structure the document with YAML frontmatter followed by content:
 
-### 1. Frontend Checkout Flow
-**Files**: `storefront/src/app/[countryCode]/(checkout)/checkout/page.tsx`
+     ```markdown
+     ---
+     date: [Current date and time with timezone in ISO format]
+     researcher: [Researcher name from metadata]
+     git_commit: [Current commit hash]
+     branch: [Current branch name]
+     repository: [Repository name]
+     topic: "[User's Question/Topic]"
+     tags: [research, codebase, relevant-component-names]
+     status: complete
+     last_updated: [Current date in YYYY-MM-DD format]
+     last_updated_by: [Researcher name]
+     ---
 
-[Detailed explanation with code references]
+     # Research: [User's Question/Topic]
 
-### 2. Backend Order Processing
-**Files**: `src/api/store/carts/route.ts:45-120`
+     **Date**: [Current date and time with timezone from step 4]
+     **Researcher**: [Researcher name from metadata]
+     **Git Commit**: [Current commit hash from step 4]
+     **Branch**: [Current branch name from step 4]
+     **Repository**: [Repository name]
 
-[Detailed explanation with code references]
+     ## Research Question
 
-## Architecture Diagram
-[ASCII or mermaid diagram if helpful]
+     [Original user query]
 
-## Data Flow
-1. [Step 1]
-2. [Step 2]
-3. [Step 3]
+     ## Summary
 
-## Configuration
-[Environment variables, settings, etc.]
+     [High-level documentation of what was found, answering the user's question by describing what exists]
 
-## Dependencies
-- MedusaJS cart module
-- Payment provider integration
-- Database: orders, carts tables
+     ## Detailed Findings
 
----
-**GitHub Links**:
-- [Checkout Page](https://github.com/gooddevstech/medusajs-with-claude/blob/main/storefront/src/app/[countryCode]/(checkout)/checkout/page.tsx)
-```
+     ### [Component/Area 1]
 
-### 7. Present to User
-Show findings clearly and handle follow-ups interactively.
+     - Description of what exists ([file.ext:line](link))
+     - How it connects to other components
+     - Current implementation details (without evaluation)
 
----
+     ### [Component/Area 2]
 
-## Critical Guidelines
+     ...
 
-### Always Use Fresh Research
-❌ **Don't rely on existing docs if the code might have changed**
-✅ **Always investigate the actual current code**
+     ## Code References
 
-### Maintain Strict Neutrality
-❌ "This should use async/await instead of promises"
-✅ "This uses promise chains with `.then()` at line 45"
+     - `path/to/file.py:123` - Description of what's there
+     - `another/file.ts:45-67` - Description of the code block
 
-❌ "The error handling is insufficient"
-✅ "Errors are caught at line 120 and logged to console"
+     ## Architecture Documentation
 
-### Include Temporal Context
-Every research document should note:
-- When it was created
-- What commit/branch it describes
-- Who/what created it
+     [Current patterns, conventions, and design implementations found in the codebase]
 
-### Provide Concrete References
-❌ "The checkout logic validates the cart"
-✅ "The checkout logic validates the cart at `cart/page.tsx:156-178`"
+     ## Related Research
 
-### Update Documents for Follow-ups
-If user asks follow-up questions, update the existing research doc:
-```yaml
----
-date: 2026-02-14
-updated: 2026-02-14 (added payment provider details)
-researcher: Claude Sonnet 4.5
----
-```
+     [Links to other research documents in thoughts/shared/research/]
 
----
+     ## Open Questions
 
-## Example Research Queries
+     [Any areas that need further investigation]
+     ```
 
-### Query: "How does authentication work?"
-**Decomposition:**
-1. Login flow (frontend + backend)
-2. Token generation and validation
-3. Session management
-4. Protected routes
+7. **Add GitHub permalinks (if applicable):**
+   - Check if on main branch or if commit is pushed: `git branch --show-current` and `git status`
+   - If on main/master or pushed, generate GitHub permalinks:
+     - Get repo info: `gh repo view --json owner,name`
+     - Create permalinks: `https://github.com/{owner}/{repo}/blob/{commit}/{file}#L{line}`
+   - Replace local file references with permalinks in the document
 
-**Sub-tasks:**
-- Locate: Find all auth-related files
-- Analyze: Trace login API call end-to-end
-- Analyze: Explain JWT token creation
-- Analyze: Document middleware protection
+8. **Present findings:**
+   - Present a concise summary of findings to the user
+   - Include key file references for easy navigation
+   - Ask if they have follow-up questions or need clarification
 
-**Output:**
-- Complete auth flow documentation
-- File references with line numbers
-- Configuration requirements
-- Security considerations (factual, not evaluative)
+9. **Handle follow-up questions:**
+   - If the user has follow-up questions, append to the same research document
+   - Update the frontmatter fields `last_updated` and `last_updated_by` to reflect the update
+   - Add `last_updated_note: "Added follow-up research for [brief description]"` to frontmatter
+   - Add a new section: `## Follow-up Research [timestamp]`
+   - Spawn new sub-agents as needed for additional investigation
+   - Continue updating the document
 
-### Query: "Document the product catalog system"
-**Decomposition:**
-1. Product data model
-2. Admin product management
-3. Storefront product display
-4. Search and filtering
+## Important notes:
 
-**Sub-tasks:**
-- Locate: Find product-related files
-- Analyze: Database schema
-- Analyze: Admin CRUD operations
-- Analyze: Storefront product pages
-- Pattern-finder: Product variant patterns
-
-**Output:**
-- Entity relationship diagram
-- CRUD operation flows
-- Search implementation details
-- Variant selection logic
-
----
-
-## Project Context
-
-### Technology Stack
-- **Backend**: MedusaJS v2.13.1, TypeScript, Node.js 20
-- **Database**: PostgreSQL 16
-- **Cache**: Redis 7
-- **Admin**: Vite-powered dashboard
-- **Storefront**: Next.js 15.3.9, React 18, TypeScript
-- **Infrastructure**: Docker Compose
-
-### Key Documentation
-- `PROJECT_SUMMARY.md` - Complete project analysis
-- `README.md` - Setup and usage instructions
-- `docker-compose.yml` - Infrastructure configuration
-
-### Directory Structure
-```
-/
-├── src/                    # MedusaJS backend
-│   ├── api/               # API routes
-│   ├── modules/           # Custom modules
-│   ├── workflows/         # Custom workflows
-│   ├── subscribers/       # Event subscribers
-│   └── admin/             # Admin customizations
-├── storefront/            # Next.js storefront
-│   └── src/
-│       ├── app/          # App router pages
-│       ├── modules/      # Feature modules
-│       └── lib/          # Utilities
-├── docker-compose.yml    # Service orchestration
-└── PROJECT_SUMMARY.md    # Project documentation
-```
-
----
-
-## Remember
-
-Research is about **understanding and documenting reality**, not evaluating it. Be thorough, be accurate, and be neutral.
+- Always use parallel Task agents to maximize efficiency and minimize context usage
+- Always run fresh codebase research - never rely solely on existing research documents
+- Focus on finding concrete file paths and line numbers for developer reference
+- Research documents should be self-contained with all necessary context
+- Each sub-agent prompt should be specific and focused on read-only documentation operations
+- Document cross-component connections and how systems interact
+- Include temporal context (when the research was conducted)
+- Link to GitHub when possible for permanent references
+- Keep the main agent focused on synthesis, not deep file reading
+- Have sub-agents document examples and usage patterns as they exist
+- **CRITICAL**: You and all sub-agents are documentarians, not evaluators
+- **REMEMBER**: Document what IS, not what SHOULD BE
+- **NO RECOMMENDATIONS**: Only describe the current state of the codebase
+- **File reading**: Always read mentioned files FULLY (no limit/offset) before spawning sub-tasks
+- **Critical ordering**: Follow the numbered steps exactly
+  - ALWAYS read mentioned files first before spawning sub-tasks (step 1)
+  - ALWAYS wait for all sub-agents to complete before synthesizing (step 4)
+  - ALWAYS gather metadata before writing the document (step 5 before step 6)
+  - NEVER write the research document with placeholder values
+- **Frontmatter consistency**:
+  - Always include frontmatter at the beginning of research documents
+  - Keep frontmatter fields consistent across all research documents
+  - Update frontmatter when adding follow-up research
+  - Use snake_case for multi-word field names (e.g., `last_updated`, `git_commit`)
+  - Tags should be relevant to the research topic and components studied
