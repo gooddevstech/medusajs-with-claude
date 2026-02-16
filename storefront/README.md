@@ -1,125 +1,77 @@
-<p align="center">
-  <a href="https://www.medusajs.com">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/59018053/229103275-b5e482bb-4601-46e6-8142-244f531cebdb.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    <img alt="Medusa logo" src="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    </picture>
-  </a>
-</p>
+# The Bloom Shop - Online Flower Shop
 
-<h1 align="center">
-  Medusa Next.js Starter Template
-</h1>
+A modern, performant online flower shop built with Next.js 15 and MedusaJS v2.
 
-<p align="center">
-Combine Medusa's modules for your commerce backend with the newest Next.js 15 features for a performant storefront.</p>
+## About
 
-<p align="center">
-  <a href="https://github.com/medusajs/medusa/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs welcome!" />
-  </a>
-  <a href="https://discord.gg/xpCwq3Kfn8">
-    <img src="https://img.shields.io/badge/chat-on%20discord-7289DA.svg" alt="Discord Chat" />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=medusajs">
-    <img src="https://img.shields.io/twitter/follow/medusajs.svg?label=Follow%20@medusajs" alt="Follow @medusajs" />
-  </a>
-</p>
+The Bloom Shop is an ecommerce storefront for fresh flower delivery. This application provides a seamless shopping experience for customers to browse, select, and order beautiful floral arrangements.
 
-### Prerequisites
+## Features
 
-To use the [Next.js Starter Template](https://medusajs.com/nextjs-commerce/), you should have a Medusa server running locally on port 9000.
-For a quick setup, run:
+- Browse fresh flower collections
+- Product detail pages with beautiful imagery
+- Shopping cart and checkout
+- Customer accounts and order history
+- Stripe payment integration
+- Responsive design for mobile and desktop
+- Fast performance with Next.js 15
 
-```shell
-npx create-medusa-app@latest
-```
+## Tech Stack
 
-Check out [create-medusa-app docs](https://docs.medusajs.com/learn/installation) for more details and troubleshooting.
+This project is built with:
+- [Next.js 15](https://nextjs.org/) - React framework
+- [MedusaJS v2](https://medusajs.com/) - Ecommerce backend
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
 
-# Overview
+## Prerequisites
 
-The Medusa Next.js Starter is built with:
+You need a Medusa server running locally on port 9000. For setup instructions, see the [MedusaJS documentation](https://docs.medusajs.com/learn/installation).
 
-- [Next.js](https://nextjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Typescript](https://www.typescriptlang.org/)
-- [Medusa](https://medusajs.com/)
+## Getting Started
 
-Features include:
-
-- Full ecommerce support:
-  - Product Detail Page
-  - Product Overview Page
-  - Product Collections
-  - Cart
-  - Checkout with Stripe
-  - User Accounts
-  - Order Details
-- Full Next.js 15 support:
-  - App Router
-  - Next fetching/caching
-  - Server Components
-  - Server Actions
-  - Streaming
-  - Static Pre-Rendering
-
-# Quickstart
-
-### Setting up the environment variables
-
-Navigate into your projects directory and get your environment variables ready:
-
-```shell
-cd nextjs-starter-medusa/
-mv .env.template .env.local
-```
-
-### Install dependencies
-
-Use Yarn to install all dependencies.
+### Install Dependencies
 
 ```shell
 yarn
 ```
 
-### Start developing
+### Environment Variables
 
-You are now ready to start up your project.
+```shell
+cp .env.template .env.local
+```
+
+Configure your environment variables in `.env.local`:
+- `NEXT_PUBLIC_MEDUSA_BACKEND_URL` - Your Medusa backend URL
+- `NEXT_PUBLIC_STRIPE_KEY` - Your Stripe public key (for payments)
+
+### Run Development Server
 
 ```shell
 yarn dev
 ```
 
-### Open the code and start customizing
+Your site will be running at http://localhost:8000
 
-Your site is now running at http://localhost:8000!
+## Deployment
 
-# Payment integrations
-
-By default this starter supports the following payment integrations
-
-- [Stripe](https://stripe.com/)
-
-To enable the integrations you need to add the following to your `.env.local` file:
+### Build for Production
 
 ```shell
-NEXT_PUBLIC_STRIPE_KEY=<your-stripe-public-key>
+yarn build
 ```
 
-You'll also need to setup the integrations in your Medusa server. See the [Medusa documentation](https://docs.medusajs.com) for more information on how to configure [Stripe](https://docs.medusajs.com/resources/commerce-modules/payment/payment-provider/stripe#main).
+### Start Production Server
 
-# Resources
+```shell
+yarn start
+```
 
-## Learn more about Medusa
+## Payment Integration
 
-- [Website](https://www.medusajs.com/)
-- [GitHub](https://github.com/medusajs)
-- [Documentation](https://docs.medusajs.com/)
+This store uses [Stripe](https://stripe.com/) for payment processing. Configure your Stripe keys in `.env.local` and set up the Stripe integration in your Medusa backend following the [Stripe integration guide](https://docs.medusajs.com/resources/commerce-modules/payment/payment-provider/stripe).
 
-## Learn more about Next.js
+## License
 
-- [Website](https://nextjs.org/)
-- [GitHub](https://github.com/vercel/next.js)
-- [Documentation](https://nextjs.org/docs)
+© 2026 The Bloom Shop. All rights reserved.

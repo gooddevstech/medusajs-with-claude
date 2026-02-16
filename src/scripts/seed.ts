@@ -63,7 +63,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const salesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
   const storeModuleService = container.resolve(Modules.STORE);
 
-  const countries = ["gb", "de", "dk", "se", "fr", "es", "it"];
+  const countries = ["us", "gb", "de", "dk", "se", "fr", "es", "it"];
 
   logger.info("Seeding store data...");
   const [store] = await storeModuleService.listStores();
@@ -92,11 +92,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
       store_id: store.id,
       supported_currencies: [
         {
-          currency_code: "eur",
+          currency_code: "usd",
           is_default: true,
         },
         {
-          currency_code: "usd",
+          currency_code: "eur",
         },
       ],
     },
@@ -115,15 +115,22 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       regions: [
         {
+          name: "North America",
+          currency_code: "usd",
+          countries: ["us"],
+          payment_providers: ["pp_system_default"],
+        },
+        {
           name: "Europe",
           currency_code: "eur",
-          countries,
+          countries: ["gb", "de", "dk", "se", "fr", "es", "it"],
           payment_providers: ["pp_system_default"],
         },
       ],
     },
   });
-  const region = regionResult[0];
+  const usRegion = regionResult[0];
+  const euRegion = regionResult[1];
   logger.info("Finished seeding regions.");
 
   logger.info("Seeding tax regions...");
@@ -142,11 +149,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       locations: [
         {
-          name: "European Warehouse",
+          name: "Bloom Shop Greenhouse",
           address: {
-            city: "Copenhagen",
-            country_code: "DK",
-            address_1: "",
+            city: "Portland",
+            country_code: "US",
+            address_1: "123 Garden Lane",
           },
         },
       ],
@@ -194,9 +201,18 @@ export default async function seedDemoData({ container }: ExecArgs) {
   }
 
   const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
-    name: "European Warehouse delivery",
+    name: "Bloom Shop Delivery",
     type: "shipping",
     service_zones: [
+      {
+        name: "North America",
+        geo_zones: [
+          {
+            country_code: "us",
+            type: "country",
+          },
+        ],
+      },
       {
         name: "Europe",
         geo_zones: [
@@ -245,28 +261,28 @@ export default async function seedDemoData({ container }: ExecArgs) {
   await createShippingOptionsWorkflow(container).run({
     input: [
       {
-        name: "Standard Shipping",
+        name: "Standard Delivery",
         price_type: "flat",
         provider_id: "manual_manual",
         service_zone_id: fulfillmentSet.service_zones[0].id,
         shipping_profile_id: shippingProfile.id,
         type: {
           label: "Standard",
-          description: "Ship in 2-3 days.",
+          description: "Delivery in 2-3 business days.",
           code: "standard",
         },
         prices: [
           {
             currency_code: "usd",
-            amount: 10,
+            amount: 999, // $9.99
           },
           {
             currency_code: "eur",
-            amount: 10,
+            amount: 999,
           },
           {
-            region_id: region.id,
-            amount: 10,
+            region_id: usRegion.id,
+            amount: 999,
           },
         ],
         rules: [
@@ -283,28 +299,28 @@ export default async function seedDemoData({ container }: ExecArgs) {
         ],
       },
       {
-        name: "Express Shipping",
+        name: "Same-Day Delivery",
         price_type: "flat",
         provider_id: "manual_manual",
         service_zone_id: fulfillmentSet.service_zones[0].id,
         shipping_profile_id: shippingProfile.id,
         type: {
           label: "Express",
-          description: "Ship in 24 hours.",
+          description: "Same-day delivery for orders before 2 PM.",
           code: "express",
         },
         prices: [
           {
             currency_code: "usd",
-            amount: 10,
+            amount: 1999, // $19.99
           },
           {
             currency_code: "eur",
-            amount: 10,
+            amount: 1999,
           },
           {
-            region_id: region.id,
-            amount: 10,
+            region_id: usRegion.id,
+            amount: 1999,
           },
         ],
         rules: [
@@ -370,7 +386,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
   logger.info("Finished seeding publishable API key data.");
 
-  logger.info("Seeding product data...");
+  logger.info("Seeding product categories...");
 
   const { result: categoryResult } = await createProductCategoriesWorkflow(
     container
@@ -378,205 +394,171 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       product_categories: [
         {
-          name: "Shirts",
+          name: "Tulips",
+          description: "Fresh tulips in various colors",
           is_active: true,
         },
         {
-          name: "Sweatshirts",
+          name: "Roses",
+          description: "Classic roses for every occasion",
           is_active: true,
         },
         {
-          name: "Pants",
+          name: "Daisies",
+          description: "Cheerful daisies to brighten any day",
           is_active: true,
         },
         {
-          name: "Merch",
+          name: "Craft Flowers",
+          description: "Handmade fuzzy wire flowers",
+          is_active: true,
+        },
+        {
+          name: "Bouquets",
+          description: "Pre-arranged flower bouquets",
           is_active: true,
         },
       ],
     },
   });
 
+  logger.info("Seeding product data...");
+
   await createProductsWorkflow(container).run({
     input: {
       products: [
         {
-          title: "Medusa T-Shirt",
+          title: "Fresh Tulips",
           category_ids: [
-            categoryResult.find((cat) => cat.name === "Shirts")!.id,
+            categoryResult.find((cat) => cat.name === "Tulips")!.id,
           ],
           description:
-            "Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.",
-          handle: "t-shirt",
-          weight: 400,
+            "Beautiful fresh tulips, hand-picked from our greenhouse. Perfect for brightening any room or as a thoughtful gift.",
+          handle: "fresh-tulips",
+          weight: 200,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-black-front.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-black-back.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-white-front.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-white-back.png",
+              url: "https://images.unsplash.com/photo-1520763185298-1b434c919102?w=800",
             },
           ],
           options: [
-            {
-              title: "Size",
-              values: ["S", "M", "L", "XL"],
-            },
             {
               title: "Color",
-              values: ["Black", "White"],
+              values: ["Red", "Yellow", "Pink", "White", "Purple"],
+            },
+            {
+              title: "Quantity",
+              values: ["10 stems", "20 stems", "30 stems"],
             },
           ],
           variants: [
             {
-              title: "S / Black",
-              sku: "SHIRT-S-BLACK",
+              title: "Red / 10 stems",
+              sku: "TULIP-RED-10",
               options: {
-                Size: "S",
-                Color: "Black",
+                Color: "Red",
+                Quantity: "10 stems",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
+                  amount: 2499, // $24.99
+                  currency_code: "usd",
                 },
                 {
-                  amount: 15,
-                  currency_code: "usd",
+                  amount: 2299,
+                  currency_code: "eur",
                 },
               ],
             },
             {
-              title: "S / White",
-              sku: "SHIRT-S-WHITE",
+              title: "Red / 20 stems",
+              sku: "TULIP-RED-20",
               options: {
-                Size: "S",
+                Color: "Red",
+                Quantity: "20 stems",
+              },
+              prices: [
+                {
+                  amount: 4499, // $44.99
+                  currency_code: "usd",
+                },
+                {
+                  amount: 4199,
+                  currency_code: "eur",
+                },
+              ],
+            },
+            {
+              title: "Yellow / 10 stems",
+              sku: "TULIP-YELLOW-10",
+              options: {
+                Color: "Yellow",
+                Quantity: "10 stems",
+              },
+              prices: [
+                {
+                  amount: 2499,
+                  currency_code: "usd",
+                },
+                {
+                  amount: 2299,
+                  currency_code: "eur",
+                },
+              ],
+            },
+            {
+              title: "Pink / 10 stems",
+              sku: "TULIP-PINK-10",
+              options: {
+                Color: "Pink",
+                Quantity: "10 stems",
+              },
+              prices: [
+                {
+                  amount: 2499,
+                  currency_code: "usd",
+                },
+                {
+                  amount: 2299,
+                  currency_code: "eur",
+                },
+              ],
+            },
+            {
+              title: "White / 10 stems",
+              sku: "TULIP-WHITE-10",
+              options: {
                 Color: "White",
+                Quantity: "10 stems",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
+                  amount: 2499,
+                  currency_code: "usd",
                 },
                 {
-                  amount: 15,
-                  currency_code: "usd",
+                  amount: 2299,
+                  currency_code: "eur",
                 },
               ],
             },
             {
-              title: "M / Black",
-              sku: "SHIRT-M-BLACK",
+              title: "Purple / 10 stems",
+              sku: "TULIP-PURPLE-10",
               options: {
-                Size: "M",
-                Color: "Black",
+                Color: "Purple",
+                Quantity: "10 stems",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
+                  amount: 2699, // $26.99
                   currency_code: "usd",
                 },
-              ],
-            },
-            {
-              title: "M / White",
-              sku: "SHIRT-M-WHITE",
-              options: {
-                Size: "M",
-                Color: "White",
-              },
-              prices: [
                 {
-                  amount: 10,
+                  amount: 2499,
                   currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "L / Black",
-              sku: "SHIRT-L-BLACK",
-              options: {
-                Size: "L",
-                Color: "Black",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "L / White",
-              sku: "SHIRT-L-WHITE",
-              options: {
-                Size: "L",
-                Color: "White",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "XL / Black",
-              sku: "SHIRT-XL-BLACK",
-              options: {
-                Size: "XL",
-                Color: "Black",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "XL / White",
-              sku: "SHIRT-XL-WHITE",
-              options: {
-                Size: "XL",
-                Color: "White",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
                 },
               ],
             },
@@ -588,96 +570,119 @@ export default async function seedDemoData({ container }: ExecArgs) {
           ],
         },
         {
-          title: "Medusa Sweatshirt",
+          title: "Fresh Roses",
           category_ids: [
-            categoryResult.find((cat) => cat.name === "Sweatshirts")!.id,
+            categoryResult.find((cat) => cat.name === "Roses")!.id,
           ],
           description:
-            "Reimagine the feeling of a classic sweatshirt. With our cotton sweatshirt, everyday essentials no longer have to be ordinary.",
-          handle: "sweatshirt",
-          weight: 400,
+            "Elegant long-stem roses, perfect for expressing love, gratitude, or sympathy. Our roses are carefully cultivated for maximum freshness and beauty.",
+          handle: "fresh-roses",
+          weight: 300,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-front.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-back.png",
+              url: "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=800",
             },
           ],
           options: [
             {
-              title: "Size",
-              values: ["S", "M", "L", "XL"],
+              title: "Color",
+              values: ["Red", "Pink", "White", "Yellow"],
+            },
+            {
+              title: "Quantity",
+              values: ["12 stems", "24 stems", "36 stems"],
             },
           ],
           variants: [
             {
-              title: "S",
-              sku: "SWEATSHIRT-S",
+              title: "Red / 12 stems",
+              sku: "ROSE-RED-12",
               options: {
-                Size: "S",
+                Color: "Red",
+                Quantity: "12 stems",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
+                  amount: 4999, // $49.99
+                  currency_code: "usd",
                 },
                 {
-                  amount: 15,
-                  currency_code: "usd",
+                  amount: 4599,
+                  currency_code: "eur",
                 },
               ],
             },
             {
-              title: "M",
-              sku: "SWEATSHIRT-M",
+              title: "Red / 24 stems",
+              sku: "ROSE-RED-24",
               options: {
-                Size: "M",
+                Color: "Red",
+                Quantity: "24 stems",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
+                  amount: 8999, // $89.99
+                  currency_code: "usd",
                 },
                 {
-                  amount: 15,
-                  currency_code: "usd",
+                  amount: 8299,
+                  currency_code: "eur",
                 },
               ],
             },
             {
-              title: "L",
-              sku: "SWEATSHIRT-L",
+              title: "Pink / 12 stems",
+              sku: "ROSE-PINK-12",
               options: {
-                Size: "L",
+                Color: "Pink",
+                Quantity: "12 stems",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
+                  amount: 4999,
+                  currency_code: "usd",
                 },
                 {
-                  amount: 15,
-                  currency_code: "usd",
+                  amount: 4599,
+                  currency_code: "eur",
                 },
               ],
             },
             {
-              title: "XL",
-              sku: "SWEATSHIRT-XL",
+              title: "White / 12 stems",
+              sku: "ROSE-WHITE-12",
               options: {
-                Size: "XL",
+                Color: "White",
+                Quantity: "12 stems",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
+                  amount: 4999,
+                  currency_code: "usd",
                 },
                 {
-                  amount: 15,
+                  amount: 4599,
+                  currency_code: "eur",
+                },
+              ],
+            },
+            {
+              title: "Yellow / 12 stems",
+              sku: "ROSE-YELLOW-12",
+              options: {
+                Color: "Yellow",
+                Quantity: "12 stems",
+              },
+              prices: [
+                {
+                  amount: 4999,
                   currency_code: "usd",
+                },
+                {
+                  amount: 4599,
+                  currency_code: "eur",
                 },
               ],
             },
@@ -689,96 +694,59 @@ export default async function seedDemoData({ container }: ExecArgs) {
           ],
         },
         {
-          title: "Medusa Sweatpants",
+          title: "Cheerful Daisies",
           category_ids: [
-            categoryResult.find((cat) => cat.name === "Pants")!.id,
+            categoryResult.find((cat) => cat.name === "Daisies")!.id,
           ],
           description:
-            "Reimagine the feeling of classic sweatpants. With our cotton sweatpants, everyday essentials no longer have to be ordinary.",
-          handle: "sweatpants",
-          weight: 400,
+            "Bright and cheerful daisies that bring joy to any space. Perfect for casual bouquets and everyday celebrations.",
+          handle: "cheerful-daisies",
+          weight: 150,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-front.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-back.png",
+              url: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800",
             },
           ],
           options: [
             {
-              title: "Size",
-              values: ["S", "M", "L", "XL"],
+              title: "Quantity",
+              values: ["15 stems", "30 stems"],
             },
           ],
           variants: [
             {
-              title: "S",
-              sku: "SWEATPANTS-S",
+              title: "15 stems",
+              sku: "DAISY-15",
               options: {
-                Size: "S",
+                Quantity: "15 stems",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
+                  amount: 1999, // $19.99
+                  currency_code: "usd",
                 },
                 {
-                  amount: 15,
-                  currency_code: "usd",
+                  amount: 1899,
+                  currency_code: "eur",
                 },
               ],
             },
             {
-              title: "M",
-              sku: "SWEATPANTS-M",
+              title: "30 stems",
+              sku: "DAISY-30",
               options: {
-                Size: "M",
+                Quantity: "30 stems",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
+                  amount: 3499, // $34.99
                   currency_code: "usd",
                 },
-              ],
-            },
-            {
-              title: "L",
-              sku: "SWEATPANTS-L",
-              options: {
-                Size: "L",
-              },
-              prices: [
                 {
-                  amount: 10,
+                  amount: 3199,
                   currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "XL",
-              sku: "SWEATPANTS-XL",
-              options: {
-                Size: "XL",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
                 },
               ],
             },
@@ -790,96 +758,200 @@ export default async function seedDemoData({ container }: ExecArgs) {
           ],
         },
         {
-          title: "Medusa Shorts",
+          title: "Fuzzy Wire Flower",
           category_ids: [
-            categoryResult.find((cat) => cat.name === "Merch")!.id,
+            categoryResult.find((cat) => cat.name === "Craft Flowers")!.id,
           ],
           description:
-            "Reimagine the feeling of classic shorts. With our cotton shorts, everyday essentials no longer have to be ordinary.",
-          handle: "shorts",
+            "Handmade fuzzy wire flowers that last forever. Perfect for crafts, decorations, or as a unique gift. These colorful pipe cleaner flowers never wilt!",
+          handle: "fuzzy-wire-flower",
+          weight: 50,
+          status: ProductStatus.PUBLISHED,
+          shipping_profile_id: shippingProfile.id,
+          images: [
+            {
+              url: "https://images.unsplash.com/photo-1563207153-f403bf289096?w=800",
+            },
+          ],
+          options: [
+            {
+              title: "Color",
+              values: ["Rainbow", "Red", "Blue", "Pink", "Yellow", "Purple"],
+            },
+            {
+              title: "Size",
+              values: ["Small", "Medium", "Large"],
+            },
+          ],
+          variants: [
+            {
+              title: "Rainbow / Medium",
+              sku: "FUZZY-RAINBOW-M",
+              options: {
+                Color: "Rainbow",
+                Size: "Medium",
+              },
+              prices: [
+                {
+                  amount: 1299, // $12.99
+                  currency_code: "usd",
+                },
+                {
+                  amount: 1199,
+                  currency_code: "eur",
+                },
+              ],
+            },
+            {
+              title: "Red / Medium",
+              sku: "FUZZY-RED-M",
+              options: {
+                Color: "Red",
+                Size: "Medium",
+              },
+              prices: [
+                {
+                  amount: 999, // $9.99
+                  currency_code: "usd",
+                },
+                {
+                  amount: 899,
+                  currency_code: "eur",
+                },
+              ],
+            },
+            {
+              title: "Blue / Medium",
+              sku: "FUZZY-BLUE-M",
+              options: {
+                Color: "Blue",
+                Size: "Medium",
+              },
+              prices: [
+                {
+                  amount: 999,
+                  currency_code: "usd",
+                },
+                {
+                  amount: 899,
+                  currency_code: "eur",
+                },
+              ],
+            },
+            {
+              title: "Pink / Medium",
+              sku: "FUZZY-PINK-M",
+              options: {
+                Color: "Pink",
+                Size: "Medium",
+              },
+              prices: [
+                {
+                  amount: 999,
+                  currency_code: "usd",
+                },
+                {
+                  amount: 899,
+                  currency_code: "eur",
+                },
+              ],
+            },
+            {
+              title: "Rainbow / Large",
+              sku: "FUZZY-RAINBOW-L",
+              options: {
+                Color: "Rainbow",
+                Size: "Large",
+              },
+              prices: [
+                {
+                  amount: 1599, // $15.99
+                  currency_code: "usd",
+                },
+                {
+                  amount: 1499,
+                  currency_code: "eur",
+                },
+              ],
+            },
+          ],
+          sales_channels: [
+            {
+              id: defaultSalesChannel[0].id,
+            },
+          ],
+        },
+        {
+          title: "Mixed Spring Bouquet",
+          category_ids: [
+            categoryResult.find((cat) => cat.name === "Bouquets")!.id,
+          ],
+          description:
+            "A stunning pre-arranged bouquet featuring a mix of seasonal spring flowers including tulips, daisies, and greenery. Wrapped beautifully and ready to gift.",
+          handle: "mixed-spring-bouquet",
           weight: 400,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/shorts-vintage-front.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/shorts-vintage-back.png",
+              url: "https://images.unsplash.com/photo-1497276236755-0f85ba99a126?w=800",
             },
           ],
           options: [
             {
               title: "Size",
-              values: ["S", "M", "L", "XL"],
+              values: ["Standard", "Deluxe", "Premium"],
             },
           ],
           variants: [
             {
-              title: "S",
-              sku: "SHORTS-S",
+              title: "Standard",
+              sku: "BOUQUET-SPRING-STD",
               options: {
-                Size: "S",
+                Size: "Standard",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
+                  amount: 3999, // $39.99
+                  currency_code: "usd",
                 },
                 {
-                  amount: 15,
-                  currency_code: "usd",
+                  amount: 3699,
+                  currency_code: "eur",
                 },
               ],
             },
             {
-              title: "M",
-              sku: "SHORTS-M",
+              title: "Deluxe",
+              sku: "BOUQUET-SPRING-DLX",
               options: {
-                Size: "M",
+                Size: "Deluxe",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
+                  amount: 5999, // $59.99
+                  currency_code: "usd",
                 },
                 {
-                  amount: 15,
-                  currency_code: "usd",
+                  amount: 5499,
+                  currency_code: "eur",
                 },
               ],
             },
             {
-              title: "L",
-              sku: "SHORTS-L",
+              title: "Premium",
+              sku: "BOUQUET-SPRING-PRM",
               options: {
-                Size: "L",
+                Size: "Premium",
               },
               prices: [
                 {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
+                  amount: 7999, // $79.99
                   currency_code: "usd",
                 },
-              ],
-            },
-            {
-              title: "XL",
-              sku: "SHORTS-XL",
-              options: {
-                Size: "XL",
-              },
-              prices: [
                 {
-                  amount: 10,
+                  amount: 7399,
                   currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
                 },
               ],
             },
@@ -906,7 +978,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   for (const inventoryItem of inventoryItems) {
     const inventoryLevel = {
       location_id: stockLocation.id,
-      stocked_quantity: 1000000,
+      stocked_quantity: 1000,
       inventory_item_id: inventoryItem.id,
     };
     inventoryLevels.push(inventoryLevel);
@@ -919,4 +991,5 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
 
   logger.info("Finished seeding inventory levels data.");
+  logger.info("✨ Bloom Shop seed data completed successfully!");
 }
