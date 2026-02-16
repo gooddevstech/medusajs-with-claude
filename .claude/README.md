@@ -2,6 +2,48 @@
 
 This directory contains specialized agent configurations and commands for Claude Code to effectively work with the MedusaJS e-commerce codebase.
 
+## Other details not yet added to this readme file
+Architecture Overview
+Frontend
+TanStack Start with React
+
+File-based routing ($param syntax)
+TanStack Query for data fetching
+Tailwind CSS styling
+Medusa JS SDK integration
+Backend
+Medusa 2.0 Framework
+
+Modular commerce architecture
+Workflow-based mutations
+Query.graph for data access
+Built-in commerce modules
+Development
+Claude Code AI Assistant
+
+Skill-based knowledge system
+Task sub-agents for exploration
+MedusaExec for database ops
+Visual verification workflow
+
+
+
+Claude Code Skills
+Skills are specialized knowledge modules that contain proven patterns, workflows, and best practices for Medusa implementation. Each skill is loaded before implementing features to ensure consistency and prevent mistakes.
+
+skills/adding-data-to-medusa
+Use when creating products, categories, collections, sales channels, regions, or promotions in Medusa. Contains critical data structures, sales channel requirements, product options patterns, and common pitfalls to avoid.
+
+skills/designing-storefronts
+LOAD THIS when building UI or implementing visual changes. Contains design thinking process to create distinctive frontends that avoid generic AI aesthetics.
+
+skills/fetching-medusa-product-data
+CRITICAL for fetching or querying product data in storefront correctly or understanding product data structures. Contains product fetching patterns, filtering, sorting, and data relationships. Load before you need to implement fetching correctly in storefronts.
+
+skills/building-with-medusa
+LOAD THIS FIRST when implementing custom Medusa features. Contains essential patterns for middleware validation, custom API routes, workflows, SDK usage, and how to query custom data from storefronts and admin customizations.
+
+
 ## 📁 Directory Structure
 
 ```
@@ -12,6 +54,11 @@ This directory contains specialized agent configurations and commands for Claude
 │   └── codebase-analyzer.md # Code analysis agent
 ├── commands/         # Command templates
 │   └── research.md          # Research codebase command
+├── skills/           # Claude Code Skills
+│   └── adding-data-to-medusa.md 
+│   └── designing-storefronts.md 
+│   └── fetching-medusa-product-data.md 
+│   └── building-with-medusa.md 
 └── README.md         # This file
 ```
 
