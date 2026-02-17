@@ -1,0 +1,72 @@
+# Multi-stage production Dockerfile for Medusa Backend
+FROM node:20-alpine AS dependencies
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock ./
+
+# Install production dependencies only
+RUN yarn install --frozen-lockfile --production=true && \
+    yarn cache clean
+
+# Builder stage
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock ./
+
+# Install all dependencies (including dev)
+RUN yarn install --frozen-lockfile && \
+    yarn cache clean
+
+# Copy source code
+COPY . .
+
+# Build Medusa admin and backend
+RUN yarn build && \
+    yarn medusa build
+
+# Production stage
+FROM node:20-alpine AS runtime
+
+WORKDIR /app
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init curl
+
+# Copy production dependencies from dependencies stage
+COPY --from=dependencies /app/node_modules ./node_modules
+
+# Copy package files
+COPY --from=builder /app/package.json /app/yarn.lock ./
+
+# Copy built code and admin panel from builder
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/.medusa ./.medusa
+COPY --from=builder /app/build ./build
+
+# Copy essential config files
+COPY --from=builder /app/medusa-config.ts ./
+COPY --from=builder /app/tsconfig.json ./
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-9000}/health || exit 1
+
+# Use dumb-init to handle signals
+ENTRYPOINT ["dumb-init", "--"]
+
+# Default to production Medusa start command
+# Override with yarn medusa db:migrate for migrations
+# Override with yarn medusa user to create admin users
+CMD ["yarn", "medusa", "start"]
+
+# Expose port
+EXPOSE 9000
+
+# Environment defaults
+ENV NODE_ENV=production \
+    PORT=9000
