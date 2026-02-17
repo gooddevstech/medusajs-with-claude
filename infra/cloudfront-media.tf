@@ -41,10 +41,8 @@ module "cloudfront" {
     cloudfront_default_certificate = true
   }
 
-  restrictions = {
-    geo_restriction = {
-      restriction_type = "none"
-    }
+  geo_restriction = {
+    restriction_type = "none"
   }
 
   tags = merge(var.tags, { Name = "${var.project_name}-cloudfront-media" })
