@@ -23,7 +23,6 @@ module "redis" {
 
   # Maintenance and backup
   notification_topic_arn              = ""
-  automatic_failover_enabled          = true
   maintenance_window                  = "sun:05:00-sun:06:00"
   snapshot_retention_limit             = 5
   snapshot_window                     = "04:00-05:00"
