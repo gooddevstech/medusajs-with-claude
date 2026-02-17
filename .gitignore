@@ -23,4 +23,7 @@ build
 !.yarn/sdks
 !.yarn/versions
 
-.medusainfra/terraform.tfvars
+.medusa
+infra/terraform.tfvars
+*.tfvars
+!*.tfvars.example
