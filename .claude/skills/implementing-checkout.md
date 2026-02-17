@@ -1,3 +1,8 @@
+---
+name: implementing-checkout
+description: Use when implementing or modifying checkout flows.
+---
+
 Use when implementing or modifying checkout flows.
 
 # Checkout Flow

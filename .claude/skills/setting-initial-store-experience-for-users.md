@@ -1,3 +1,8 @@
+---
+name: setting-initial-store-experience-for-users
+description: Use when a user describes their store concept for the first time.
+---
+
 Use when a user describes their store concept for the first time.
 
 # Initial Store Setup

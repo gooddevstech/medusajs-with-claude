@@ -1,3 +1,8 @@
+---
+name: configuring-regions-countries-currencies
+description: Use when setting up regions, configuring countries, or handling multi-currency scenarios.
+---
+
 Use when setting up regions, configuring countries, or handling multi-currency scenarios.
 
 # Configuring Regions, Countries, and Currencies

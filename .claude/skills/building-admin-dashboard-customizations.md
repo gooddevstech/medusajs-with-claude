@@ -1,3 +1,8 @@
+---
+name: building-admin-dashboard-customizations
+description: Use when creating Medusa Admin dashboard customizations (widgets, routes, UI extensions).
+---
+
 Use when creating Medusa Admin dashboard customizations (widgets, routes, UI extensions).
 
 # Medusa Admin Customizations

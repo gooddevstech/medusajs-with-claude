@@ -1,3 +1,8 @@
+---
+name: using-emails
+description: Guidance for implementing email functionality with React Email templates.
+---
+
 Guidance for implementing email functionality with React Email templates.
 
 # Using Emails with React Email

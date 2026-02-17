@@ -1,3 +1,8 @@
+---
+name: integrating-third-parties
+description: Use when user requests integrations with Instagram, Google, Mailchimp, etc.
+---
+
 Use when user requests integrations with Instagram, Google, Mailchimp, etc.
 
 # Third-Party Integrations

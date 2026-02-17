@@ -1,3 +1,8 @@
+---
+name: handling-complex-features
+description: Use when user requests subscriptions, marketplaces, bundles, B2B, or omnichannel.
+---
+
 Use when user requests subscriptions, marketplaces, bundles, B2B, or omnichannel.
 
 # Handling Complex Features

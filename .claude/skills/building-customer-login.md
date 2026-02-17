@@ -1,3 +1,8 @@
+---
+name: building-customer-login
+description: Use when building customer accounts and login in the storefront.
+---
+
 Use when building customer accounts and login in the storefront.
 
 # Customer Account Implementation

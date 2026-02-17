@@ -1,3 +1,8 @@
+---
+name: implementing-newsletter-features
+description: Guide for implementing newsletter subscription features.
+---
+
 Guide for implementing newsletter subscription features.
 
 # Newsletter Features

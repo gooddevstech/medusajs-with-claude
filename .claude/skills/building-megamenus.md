@@ -1,3 +1,8 @@
+---
+name: building-megamenus
+description: Use when implementing mega menu navigation with categories, dropdowns, or complex navigation structures.
+---
+
 Use when implementing mega menu navigation with categories, dropdowns, or complex navigation structures.
 
 # Building Mega Menus

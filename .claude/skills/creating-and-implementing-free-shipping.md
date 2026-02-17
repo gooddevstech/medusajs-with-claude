@@ -1,3 +1,8 @@
+---
+name: creating-and-implementing-free-shipping
+description: Use when implementing free shipping promotions with and without thresholds.
+---
+
 Use when implementing free shipping promotions with and without thresholds.
 
 # Free Shipping Implementation

@@ -1,3 +1,8 @@
+---
+name: creating-promotions
+description: Use when implementing sales, promotions, discounts, or special offers.
+---
+
 Use when implementing sales, promotions, discounts, or special offers.
 
 # Creating Promotions

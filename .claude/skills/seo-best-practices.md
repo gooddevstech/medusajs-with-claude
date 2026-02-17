@@ -1,3 +1,8 @@
+---
+name: seo-best-practices
+description: Use when optimizing ecommerce storefronts for SEO, implementing meta tags, structured data, product schema.
+---
+
 Use when optimizing ecommerce storefronts for SEO, implementing meta tags, structured data, product schema.
 
 # SEO Optimization for Ecommerce Storefronts
