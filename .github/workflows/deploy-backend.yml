@@ -1,0 +1,260 @@
+name: Deploy Backend
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'Dockerfile'
+      - 'medusa-config.ts'
+      - 'tsconfig.json'
+      - '.github/workflows/deploy-backend.yml'
+
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy Backend
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push backend image to ECR
+        id: image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: tindahang-backend
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+                       -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+                       -f Dockerfile .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Download ECS task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition tindahang-backend \
+            --query taskDefinition > task-definition.json
+
+      - name: Update ECS task definition with new image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: backend
+          image: ${{ steps.image.outputs.image }}
+
+      - name: Run database migration
+        id: migration
+        continue-on-error: true
+        run: |
+          # Get subnets and security groups
+          SUBNET=$(aws ec2 describe-subnets --region ${{ secrets.AWS_REGION }} --filters Name=tag:Environment,Values=production --query 'Subnets[0].SubnetId' --output text)
+          SG=$(aws ec2 describe-security-groups --region ${{ secrets.AWS_REGION }} --filters Name=tag:Name,Values=*ecs-tasks-sg --query 'SecurityGroups[0].GroupId' --output text)
+          
+          # Run migration task
+          TASK_ARN=$(aws ecs run-task \
+            --cluster tindahang-ecs \
+            --task-definition tindahang-backend \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNET],securityGroups=[$SG],assignPublicIp=ENABLED}" \
+            --overrides "containerOverrides=[{name=backend,command=[\"yarn\",\"medusa\",\"db:migrate\"]}]" \
+            --query 'tasks[0].taskArn' \
+            --output text)
+          
+          echo "Migration task: $TASK_ARN"
+          
+          # Wait and check status
+          aws ecs wait tasks-running --cluster tindahang-ecs --tasks $TASK_ARN || true
+          sleep 15
+          
+          TASK_STATUS=$(aws ecs describe-tasks \
+            --cluster tindahang-ecs \
+            --tasks $TASK_ARN \
+            --query 'tasks[0].lastStatus' \
+            --output text)
+          
+          echo "Migration status: $TASK_STATUS"
+
+      - name: Deploy to ECS service
+        run: |
+          aws ecs update-service \
+            --cluster tindahang-ecs \
+            --service tindahang-backend \
+            --task-definition tindahang-backend \
+            --force-new-deployment
+
+      - name: Wait for service to stabilize
+        run: |
+          aws ecs wait services-stable \
+            --cluster tindahang-ecs \
+            --services tindahang-backend \
+            --max-attempts 60
+
+      - name: Verify service health
+        run: |
+          RUNNING_COUNT=$(aws ecs describe-services \
+            --cluster tindahang-ecs \
+            --services tindahang-backend \
+            --query 'services[0].runningCount' \
+            --output text)
+          
+          DESIRED_COUNT=$(aws ecs describe-services \
+            --cluster tindahang-ecs \
+            --services tindahang-backend \
+            --query 'services[0].desiredCount' \
+            --output text)
+          
+          echo "Backend service: $RUNNING_COUNT/$DESIRED_COUNT tasks running"
+          
+          if [ "$RUNNING_COUNT" -ne "$DESIRED_COUNT" ]; then
+            exit 1
+          fi
+
+      - name: Deployment Summary
+        run: |
+          echo "✅ Backend deployment completed successfully"
+          echo "Image: ${{ steps.image.outputs.image }}"
+          echo "Service: tindahang-backend"
+          echo "Cluster: tindahang-ecs"
+</content>
+</invoke_tool>
+
+<execute_command>
+<command>cd /Users/jeff.paredes/Documents/gooddevs-tech/tindahang-ai-by-claudecode && git add .github/workflows/deploy-backend.yml && git commit -m "feat(ci): add backend deployment workflow with database migration and ECS service update"</command>
+<requires_approval>false</requires_approval>
+</execute_command>
+
+Now create the storefront deployment workflow:
+<write_to_file>
+<path>.github/workflows/deploy-storefront.yml</path>
+<content>
+name: Deploy Storefront
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'storefront/**'
+      - '.github/workflows/deploy-storefront.yml'
+
+concurrency:
+  group: deploy-storefront
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy Storefront
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push storefront image to ECR
+        id: image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: tindahang-storefront
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+                       -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+                       -f storefront/Dockerfile \
+                       storefront/
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Download ECS task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition tindahang-storefront \
+            --query taskDefinition > task-definition.json
+
+      - name: Update ECS task definition with new image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: storefront
+          image: ${{ steps.image.outputs.image }}
+
+      - name: Deploy to ECS service
+        run: |
+          aws ecs update-service \
+            --cluster tindahang-ecs \
+            --service tindahang-storefront \
+            --task-definition tindahang-storefront \
+            --force-new-deployment
+
+      - name: Wait for service to stabilize
+        run: |
+          aws ecs wait services-stable \
+            --cluster tindahang-ecs \
+            --services tindahang-storefront \
+            --max-attempts 60
+
+      - name: Verify service health
+        run: |
+          RUNNING_COUNT=$(aws ecs describe-services \
+            --cluster tindahang-ecs \
+            --services tindahang-storefront \
+            --query 'services[0].runningCount' \
+            --output text)
+          
+          DESIRED_COUNT=$(aws ecs describe-services \
+            --cluster tindahang-ecs \
+            --services tindahang-storefront \
+            --query 'services[0].desiredCount' \
+            --output text)
+          
+          echo "Storefront service: $RUNNING_COUNT/$DESIRED_COUNT tasks running"
+          
+          if [ "$RUNNING_COUNT" -ne "$DESIRED_COUNT" ]; then
+            exit 1
+          fi
+
+      - name: Deployment Summary
+        run: |
+          echo "✅ Storefront deployment completed successfully"
+          echo "Image: ${{ steps.image.outputs.image }}"
+          echo "Service: tindahang-storefront"
+          echo "Cluster: tindahang-ecs"
