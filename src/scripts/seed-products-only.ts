@@ -51,7 +51,7 @@ export default async function seedFlowerProducts({ container }: ExecArgs) {
       product_categories: [
         {
           name: "Tulips",
-          description: "Fresh tulips in various colors",
+          description: "tulips in various colors",
           is_active: true,
         },
         {
@@ -84,12 +84,12 @@ export default async function seedFlowerProducts({ container }: ExecArgs) {
     input: {
       products: [
         {
-          title: "Fresh Tulips",
+          title: "Tulips",
           category_ids: [
             categoryResult.find((cat) => cat.name === "Tulips")!.id,
           ],
           description:
-            "Beautiful fresh tulips, hand-picked from our greenhouse. Perfect for brightening any room or as a thoughtful gift.",
+            "Beautiful tulips, hand-picked from our greenhouse. Perfect for brightening any room or as a thoughtful gift.",
           handle: "fresh-tulips",
           weight: 200,
           status: ProductStatus.PUBLISHED,
@@ -150,7 +150,7 @@ export default async function seedFlowerProducts({ container }: ExecArgs) {
           sales_channels: [{ id: defaultSalesChannel.id }],
         },
         {
-          title: "Fresh Roses",
+          title: "Roses",
           category_ids: [
             categoryResult.find((cat) => cat.name === "Roses")!.id,
           ],

@@ -66,13 +66,6 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-bloom-sage text-lg">🌿</span>
-              <div>
-                <p className="font-body text-sm font-medium text-bloom-charcoal">Freshness Guaranteed</p>
-                <p className="font-body text-xs text-bloom-charcoal-light">7-day freshness guarantee on all blooms</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
               <span className="text-bloom-sage text-lg">🎁</span>
               <div>
                 <p className="font-body text-sm font-medium text-bloom-charcoal">Gift Wrapping</p>

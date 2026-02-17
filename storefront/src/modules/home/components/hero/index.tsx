@@ -7,7 +7,7 @@ const Hero = () => {
     <div className="h-[85vh] w-full border-b border-ui-border-base relative overflow-hidden">
       <Image
         src="/banner.jpg"
-        alt="The Bloom Shop - Fresh Flowers"
+        alt="The Bloom Shop - Forever Flowers"
         fill
         priority
         className="object-cover"

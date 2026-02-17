@@ -575,7 +575,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
             categoryResult.find((cat) => cat.name === "Roses")!.id,
           ],
           description:
-            "Elegant long-stem roses, perfect for expressing love, gratitude, or sympathy. Our roses are carefully cultivated for maximum freshness and beauty.",
+            "Elegant long-stem roses, perfect for expressing love, gratitude, or sympathy. Available in a variety of colors to suit any occasion.",
           handle: "fresh-roses",
           weight: 300,
           status: ProductStatus.PUBLISHED,
