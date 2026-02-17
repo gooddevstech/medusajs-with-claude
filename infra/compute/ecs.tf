@@ -15,7 +15,7 @@ resource "aws_cloudwatch_log_group" "storefront" {
 
 # ECS Cluster using terraform-aws-modules
 module "ecs" {
-  source = "terraform-aws-modules/ecs/aws"
+  source  = "terraform-aws-modules/ecs/aws"
   version = "~> 5.0"
 
   name = "${var.project_name}-ecs"
@@ -173,17 +173,17 @@ resource "aws_ecs_task_definition" "storefront" {
 
 # Backend ECS Service
 resource "aws_ecs_service" "backend" {
-  name            = "${var.project_name}-backend"
-  cluster         = module.ecs.cluster_id
-  task_definition = aws_ecs_task_definition.backend.arn
-  desired_count   = var.backend_desired_count
-  launch_type     = "FARGATE"
+  name             = "${var.project_name}-backend"
+  cluster          = module.ecs.cluster_id
+  task_definition  = aws_ecs_task_definition.backend.arn
+  desired_count    = var.backend_desired_count
+  launch_type      = "FARGATE"
   platform_version = "LATEST"
 
   network_configuration {
-    subnets           = data.aws_subnets.public_default.ids
-    security_groups   = [module.ecs_tasks_sg.security_group_id]
-    assign_public_ip  = true
+    subnets          = data.aws_subnets.public_default.ids
+    security_groups  = [module.ecs_tasks_sg.security_group_id]
+    assign_public_ip = true
   }
 
   load_balancer {
@@ -211,17 +211,17 @@ resource "aws_ecs_service" "backend" {
 
 # Storefront ECS Service
 resource "aws_ecs_service" "storefront" {
-  name            = "${var.project_name}-storefront"
-  cluster         = module.ecs.cluster_id
-  task_definition = aws_ecs_task_definition.storefront.arn
-  desired_count   = var.storefront_desired_count
-  launch_type     = "FARGATE"
+  name             = "${var.project_name}-storefront"
+  cluster          = module.ecs.cluster_id
+  task_definition  = aws_ecs_task_definition.storefront.arn
+  desired_count    = var.storefront_desired_count
+  launch_type      = "FARGATE"
   platform_version = "LATEST"
 
   network_configuration {
-    subnets           = data.aws_subnets.public_default.ids
-    security_groups   = [module.ecs_tasks_sg.security_group_id]
-    assign_public_ip  = true
+    subnets          = data.aws_subnets.public_default.ids
+    security_groups  = [module.ecs_tasks_sg.security_group_id]
+    assign_public_ip = true
   }
 
   load_balancer {

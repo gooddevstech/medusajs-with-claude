@@ -1,8 +1,8 @@
 # ACM Certificate for HTTPS
 resource "aws_acm_certificate" "main" {
-  domain_name              = var.domain_name
+  domain_name               = var.domain_name
   subject_alternative_names = ["*.${var.domain_name}"]
-  validation_method        = "DNS"
+  validation_method         = "DNS"
 
   lifecycle {
     create_before_destroy = true
@@ -36,7 +36,7 @@ resource "aws_route53_record" "cert_validation" {
 
 # Validate the certificate
 resource "aws_acm_certificate_validation" "main" {
-  certificate_arn           = aws_acm_certificate.main.arn
+  certificate_arn = aws_acm_certificate.main.arn
   timeouts {
     create = "5m"
   }

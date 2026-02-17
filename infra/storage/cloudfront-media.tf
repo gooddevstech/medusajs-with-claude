@@ -1,11 +1,11 @@
 # CloudFront Distribution using terraform-aws-modules
 module "cloudfront" {
-  source = "terraform-aws-modules/cloudfront/aws"
+  source  = "terraform-aws-modules/cloudfront/aws"
   version = "~> 3.0"
 
-  enabled            = true
-  is_ipv6_enabled    = true
-  comment            = "${var.project_name} media CDN"
+  enabled             = true
+  is_ipv6_enabled     = true
+  comment             = "${var.project_name} media CDN"
   default_root_object = ""
 
   origin = {
@@ -18,10 +18,10 @@ module "cloudfront" {
   }
 
   default_cache_behavior = {
-    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "s3_bucket"
-    compress         = true
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "s3_bucket"
+    compress               = true
     viewer_protocol_policy = "redirect-to-https"
 
     forwarded_values = {

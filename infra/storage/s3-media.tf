@@ -1,6 +1,6 @@
 # S3 Bucket for Media using terraform-aws-modules
 module "s3_media" {
-  source = "terraform-aws-modules/s3-bucket/aws"
+  source  = "terraform-aws-modules/s3-bucket/aws"
   version = "~> 4.0"
 
   bucket = "${var.project_name}-media-${data.aws_caller_identity.current.account_id}"

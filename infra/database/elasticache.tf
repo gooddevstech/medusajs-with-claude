@@ -1,6 +1,6 @@
 # ElastiCache Redis Module
 module "redis" {
-  source = "terraform-aws-modules/elasticache/aws"
+  source  = "terraform-aws-modules/elasticache/aws"
   version = "~> 1.0"
 
   name_prefix = "${var.project_name}-"
@@ -22,12 +22,12 @@ module "redis" {
   parameter_group_family = "redis7"
 
   # Maintenance and backup
-  notification_topic_arn              = ""
-  maintenance_window                  = "sun:05:00-sun:06:00"
-  snapshot_retention_limit             = 5
-  snapshot_window                     = "04:00-05:00"
-  final_snapshot_identifier           = "${var.project_name}-redis-final-snapshot"
-  apply_immediately                   = false
+  notification_topic_arn    = ""
+  maintenance_window        = "sun:05:00-sun:06:00"
+  snapshot_retention_limit  = 5
+  snapshot_window           = "04:00-05:00"
+  final_snapshot_identifier = "${var.project_name}-redis-final-snapshot"
+  apply_immediately         = false
 
   tags = merge(var.tags, { Name = "${var.project_name}-redis" })
 
@@ -49,6 +49,6 @@ resource "aws_secretsmanager_secret" "redis_auth_token" {
 }
 
 resource "aws_secretsmanager_secret_version" "redis_auth_token" {
-  secret_id       = aws_secretsmanager_secret.redis_auth_token.id
-  secret_string   = random_password.redis_auth_token.result
+  secret_id     = aws_secretsmanager_secret.redis_auth_token.id
+  secret_string = random_password.redis_auth_token.result
 }
