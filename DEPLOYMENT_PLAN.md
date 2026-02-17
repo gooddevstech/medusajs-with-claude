@@ -93,29 +93,374 @@ Terraform provisions:
   6. Update ECS storefront service (rolling deploy)
   7. Wait for service stability
 
-## 3) Terraform Resource Outline
+## 3) Terraform Resource Outline (Using terraform-aws-modules)
+
+All modules are sourced from [terraform-aws-modules](https://github.com/orgs/terraform-aws-modules/repositories):
 
 ```
 infra/
-├── providers.tf          # AWS provider, ap-southeast-1
-├── backend.tf            # S3 remote state + DynamoDB lock
-├── variables.tf          # All input variables
-├── terraform.tfvars.example
-├── outputs.tf            # ECR URIs, ALB DNS, RDS endpoint, Redis endpoint, S3 bucket
-├── data.tf               # Default VPC + public subnets lookup
-├── security-groups.tf    # SGs for ALB, ECS tasks, RDS, Redis
-├── acm.tf                # ACM certificate for *.tindaph.app + DNS validation
-├── route53.tf            # Hosted zone, A records for api/admin/www → ALB
-├── rds.tf                # Postgres 16 instance (public subnet, SG-restricted)
-├── elasticache.tf        # Redis 7 replication group (public subnet, SG-restricted)
-├── ecr.tf                # ECR repos (backend + storefront) + lifecycle policies
-├── iam.tf                # ECS task execution role, task role, policies
-├── alb.tf                # ALB, target groups (backend:9000, storefront:8000), HTTPS listeners, HTTP→HTTPS redirect
-├── ecs.tf                # ECS cluster, task definitions, services (backend + storefront)
-├── s3-media.tf           # S3 bucket for product images/media uploads
-├── cloudfront-media.tf   # CloudFront distribution for media bucket
-└── cloudwatch.tf         # Log groups, basic alarms (CPU, 5xx rate)
+├── providers.tf              # AWS provider, ap-southeast-1
+├── backend.tf                # S3 remote state + DynamoDB lock
+├── variables.tf              # All input variables
+├── terraform.tfvars.example  # Example values
+├── outputs.tf                # ECR URIs, ALB DNS, RDS endpoint, Redis endpoint, S3 bucket
+│
+├── networking/
+│   ├── vpc.tf                # Module: terraform-aws-modules/vpc/aws
+│   │                          # Manages VPC, public subnets, IGW, route tables
+│   ├── security-groups.tf    # Module: terraform-aws-modules/security-group/aws (×4)
+│   │                          # ALB SG, ECS task SG, RDS SG, Redis SG
+│   ├── acm.tf                # ACM certificate for *.tindaph.app + DNS validation (Route53)
+│   └── route53.tf            # Route53 hosted zone + DNS records for api/admin/www/media → ALB/CloudFront
+│
+├── database/
+│   ├── rds.tf                # Module: terraform-aws-modules/rds/aws
+│   │                          # Postgres 16 instance (public subnet, SG-restricted)
+│   └── elasticache.tf        # Manual: Redis 7 replication group (public subnet, SG-restricted)
+│                              # [Note: elasticache module available at terraform-aws-modules/elasticache/aws]
+│
+├── compute/
+│   ├── ecr.tf                # ECR repos (backend + storefront) + lifecycle policies
+│   ├── iam.tf                # ECS task execution role, task role, policies
+│   ├── ecs.tf                # Module: terraform-aws-modules/ecs/aws
+│   │                          # ECS cluster, task definitions, services (backend + storefront)
+│   └── alb.tf                # Module: terraform-aws-modules/alb/aws
+│                              # ALB, target groups (backend:9000, storefront:8000), HTTPS listeners
+│
+├── storage/
+│   ├── s3-media.tf           # Module: terraform-aws-modules/s3-bucket/aws
+│   │                          # S3 bucket for product images/media uploads with versioning, encryption
+│   └── cloudfront-media.tf   # Module: terraform-aws-modules/cloudfront/aws
+│                              # CloudFront distribution for S3 media bucket with caching
+│
+└── monitoring/
+    └── cloudwatch.tf         # CloudWatch log groups, alarms (CPU, memory, 5xx rate)
 ```
+
+### Module References
+
+| Component | Module | Repository |
+|---|---|---|
+| VPC & Networking | `terraform-aws-modules/vpc/aws` | [github.com/terraform-aws-modules/terraform-aws-vpc](https://github.com/terraform-aws-modules/terraform-aws-vpc) |
+| Security Groups | `terraform-aws-modules/security-group/aws` | [github.com/terraform-aws-modules/terraform-aws-security-group](https://github.com/terraform-aws-modules/terraform-aws-security-group) |
+| Application Load Balancer | `terraform-aws-modules/alb/aws` | [github.com/terraform-aws-modules/terraform-aws-alb](https://github.com/terraform-aws-modules/terraform-aws-alb) |
+| ECS (Cluster & Services) | `terraform-aws-modules/ecs/aws` | [github.com/terraform-aws-modules/terraform-aws-ecs](https://github.com/terraform-aws-modules/terraform-aws-ecs) |
+| RDS Database | `terraform-aws-modules/rds/aws` | [github.com/terraform-aws-modules/terraform-aws-rds](https://github.com/terraform-aws-modules/terraform-aws-rds) |
+| S3 Bucket | `terraform-aws-modules/s3-bucket/aws` | [github.com/terraform-aws-modules/terraform-aws-s3-bucket](https://github.com/terraform-aws-modules/terraform-aws-s3-bucket) |
+| ElastiCache | `terraform-aws-modules/elasticache/aws` | [github.com/terraform-aws-modules/terraform-aws-elasticache](https://github.com/terraform-aws-modules/terraform-aws-elasticache) |
+| CloudFront | `terraform-aws-modules/cloudfront/aws` | [github.com/terraform-aws-modules/terraform-aws-cloudfront](https://github.com/terraform-aws-modules/terraform-aws-cloudfront) |
+
+### Example Module Usage
+
+**VPC Module** (`networking/vpc.tf`):
+```hcl
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
+
+  name = "tindahang-vpc"
+  cidr = "10.0.0.0/16"
+
+  azs             = data.aws_availability_zones.available.names
+  public_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
+
+  enable_nat_gateway = false  # Cost savings: use public subnets only, SG for security
+  enable_vpn_gateway = false
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = {
+    Environment = "production"
+    Project     = "tindahang"
+  }
+}
+```
+
+**ALB Module** (`compute/alb.tf`):
+```hcl
+module "alb" {
+  source = "terraform-aws-modules/alb/aws"
+  version = "~> 9.0"
+
+  name            = "tindahang-alb"
+  load_balancer_type = "application"
+  vpc_id          = module.vpc.vpc_id
+  subnets         = module.vpc.public_subnets
+  security_groups = [module.alb_sg.security_group_id]
+
+  # HTTPS listeners with ACM certificate
+  https_listeners = [
+    {
+      port            = 443
+      protocol        = "HTTPS"
+      certificate_arn = aws_acm_certificate.main.arn
+      action_type     = "forward"
+      target_group_index = 0  # storefront
+    }
+  ]
+
+  # HTTP → HTTPS redirect
+  http_listeners = [
+    {
+      port        = 80
+      protocol    = "HTTP"
+      action_type = "redirect"
+      redirect = {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
+    }
+  ]
+
+  target_groups = [
+    {
+      name        = "storefront-tg"
+      backend_protocol = "HTTP"
+      backend_port = 8000
+      target_type  = "ip"
+      health_check = {
+        healthy_threshold   = 2
+        unhealthy_threshold = 2
+        timeout             = 5
+        interval            = 30
+        path                = "/"
+        matcher             = "200"
+      }
+    },
+    {
+      name        = "backend-tg"
+      backend_protocol = "HTTP"
+      backend_port = 9000
+      target_type  = "ip"
+      health_check = {
+        healthy_threshold   = 2
+        unhealthy_threshold = 2
+        timeout             = 5
+        interval            = 30
+        path                = "/admin"
+        matcher             = "200-399"
+      }
+    }
+  ]
+
+  tags = {
+    Environment = "production"
+    Project     = "tindahang"
+  }
+}
+```
+
+**ECS Module** (`compute/ecs.tf`):
+```hcl
+module "ecs" {
+  source = "terraform-aws-modules/ecs/aws"
+  version = "~> 5.0"
+
+  name = "tindahang-ecs"
+
+  cluster_configuration = {
+    execute_command_configuration = {
+      logging = "DEFAULT"
+    }
+  }
+
+  # Backend service
+  services = {
+    backend = {
+      cpu    = 512
+      memory = 1024
+      container_definitions = {
+        backend = {
+          image  = "${aws_ecr_repository.backend.repository_url}:latest"
+          port_mappings = [
+            {
+              name          = "backend"
+              containerPort = 9000
+              hostPort      = 9000
+              protocol      = "tcp"
+            }
+          ]
+          environment = [
+            { name = "DATABASE_URL", value = aws_db_instance.postgres.endpoint },
+            { name = "REDIS_URL", value = aws_elasticache_replication_group.redis.configuration_endpoint_address },
+            # ... other env vars
+          ]
+          log_configuration = {
+            logDriver = "awslogs"
+            options = {
+              "awslogs-group"         = aws_cloudwatch_log_group.backend.name
+              "awslogs-region"        = var.aws_region
+              "awslogs-stream-prefix" = "ecs"
+            }
+          }
+        }
+      }
+      load_balancer = [
+        {
+          target_group_arn = module.alb.target_group_arns[1]
+          container_name   = "backend"
+          container_port   = 9000
+        }
+      ]
+      desired_count = 2
+      deployment_configuration = {
+        maximum_percent         = 200
+        minimum_healthy_percent = 100
+      }
+    },
+    # storefront service similarly configured
+  }
+
+  tags = {
+    Environment = "production"
+    Project     = "tindahang"
+  }
+}
+```
+
+**RDS Module** (`database/rds.tf`):
+```hcl
+module "rds" {
+  source = "terraform-aws-modules/rds/aws"
+  version = "~> 6.0"
+
+  identifier = "tindahang-postgres"
+
+  engine               = "postgres"
+  engine_version       = "16"
+  family               = "postgres16"
+  major_engine_version = "16"
+  instance_class       = "db.t3.micro"
+
+  allocated_storage = 100
+  storage_encrypted = true
+
+  db_name  = var.db_name
+  username = var.db_username
+  password = var.db_password
+  port     = 5432
+
+  vpc_security_group_ids = [module.rds_sg.security_group_id]
+  db_subnet_group_name   = aws_db_subnet_group.default.name
+  publicly_accessible    = false
+
+  backup_retention_period = 7
+  backup_window          = "03:00-04:00"
+  maintenance_window     = "sun:04:00-sun:05:00"
+
+  enabled_cloudwatch_logs_exports = ["postgresql"]
+  create_cloudwatch_log_group     = true
+
+  skip_final_snapshot = false
+  final_snapshot_identifier = "tindahang-postgres-final-snapshot"
+
+  tags = {
+    Environment = "production"
+    Project     = "tindahang"
+  }
+}
+```
+
+**S3 Module** (`storage/s3-media.tf`):
+```hcl
+module "s3_media" {
+  source = "terraform-aws-modules/s3-bucket/aws"
+  version = "~> 4.0"
+
+  bucket = "tindahang-media-${data.aws_caller_identity.current.account_id}"
+
+  versioning = {
+    enabled = true
+  }
+
+  server_side_encryption_configuration = {
+    rule = {
+      apply_server_side_encryption_by_default = {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+
+  lifecycle_rule = [
+    {
+      id     = "keep-versions"
+      status = "Enabled"
+      
+      noncurrent_version_expiration = {
+        days = 30
+      }
+    }
+  ]
+
+  tags = {
+    Environment = "production"
+    Project     = "tindahang"
+  }
+}
+```
+
+**CloudFront Module** (`storage/cloudfront-media.tf`):
+```hcl
+module "cloudfront" {
+  source = "terraform-aws-modules/cloudfront/aws"
+  version = "~> 3.0"
+
+  enabled = true
+  is_ipv6_enabled = true
+
+  origin = {
+    s3_bucket = {
+      domain_name = module.s3_media.s3_bucket_bucket_regional_domain_name
+      s3_origin_config = {
+        origin_access_identity = aws_cloudfront_origin_access_identity.s3_oai.etag
+      }
+    }
+  }
+
+  default_cache_behavior = {
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "s3_bucket"
+    compress         = true
+    viewer_protocol_policy = "redirect-to-https"
+
+    forwarded_values = {
+      query_string = false
+      cookies = {
+        forward = "none"
+      }
+    }
+  }
+
+  viewer_certificate = {
+    acm_certificate_arn      = aws_acm_certificate.cloudfront.arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+
+  domain_name_aliases = ["media.tindaph.app"]
+
+  tags = {
+    Environment = "production"
+    Project     = "tindahang"
+  }
+}
+```
+
+### Key Benefits of Module-Based Approach
+
+1. **Reduced Code:** ~60-70% less Terraform code compared to raw resource definitions
+2. **Best Practices:** Modules follow AWS Well-Architected best practices and recommendations
+3. **Consistency:** Standardized naming, tagging, and resource configuration across the infrastructure
+4. **Maintainability:** Regular updates from terraform-aws-modules team address security patches and new features
+5. **Reusability:** Modules can be easily imported into other projects with minimal changes
+6. **Documentation:** Extensive module documentation and examples available on each module's GitHub repository
 
 ## 4) Docker Images — Production Fixes Needed
 
