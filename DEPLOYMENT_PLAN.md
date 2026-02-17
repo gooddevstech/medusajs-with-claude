@@ -45,16 +45,18 @@ GitHub Actions CI/CD + Terraform infra + GitHub Secrets
 ```
 
 Terraform provisions:
-- VPC with public + private subnets (2 AZs minimum)
-- RDS Postgres 16 (private subnet, multi-AZ optional)
-- ElastiCache Redis 7 (private subnet)
+- Default VPC + public subnets (no custom VPC, no NAT gateway — cost savings)
+- RDS Postgres 16 (public subnet, access restricted via security group)
+- ElastiCache Redis 7 (public subnet, access restricted via security group)
 - ECR repos: `medusa-backend`, `medusa-storefront`
-- ECS Cluster (Fargate) with 2 services: backend + storefront
+- ECS Cluster (Fargate) with 2 services: backend + storefront (public subnets, public IP)
 - ALB with HTTPS listeners (ACM certificate for *.tindaph.app)
 - Route53 hosted zone + DNS records
 - S3 bucket for media/file uploads (product images)
 - CloudFront distribution for S3 media bucket
 - IAM roles, security groups, CloudWatch log groups
+
+> **Cost note:** Using default VPC with public subnets avoids NAT gateway costs (~$32/mo per AZ). Security is enforced via security groups — only the ALB accepts public traffic; RDS/Redis SGs only allow inbound from the ECS task SG.
 
 ## 2) GitHub Actions Workflows
 
@@ -100,12 +102,12 @@ infra/
 ├── variables.tf          # All input variables
 ├── terraform.tfvars.example
 ├── outputs.tf            # ECR URIs, ALB DNS, RDS endpoint, Redis endpoint, S3 bucket
-├── vpc.tf                # VPC, 2 public + 2 private subnets, NAT gateway, IGW
+├── data.tf               # Default VPC + public subnets lookup
 ├── security-groups.tf    # SGs for ALB, ECS tasks, RDS, Redis
 ├── acm.tf                # ACM certificate for *.tindaph.app + DNS validation
 ├── route53.tf            # Hosted zone, A records for api/admin/www → ALB
-├── rds.tf                # Postgres 16 instance (private subnet)
-├── elasticache.tf        # Redis 7 replication group (private subnet)
+├── rds.tf                # Postgres 16 instance (public subnet, SG-restricted)
+├── elasticache.tf        # Redis 7 replication group (public subnet, SG-restricted)
 ├── ecr.tf                # ECR repos (backend + storefront) + lifecycle policies
 ├── iam.tf                # ECS task execution role, task role, policies
 ├── alb.tf                # ALB, target groups (backend:9000, storefront:8000), HTTPS listeners, HTTP→HTTPS redirect
@@ -204,9 +206,12 @@ Set in repo Settings → Environments → `prod`:
 
 ## 9) Security Considerations
 
-- RDS and Redis in private subnets only (no public access)
-- ECS tasks in private subnets with NAT gateway for outbound
-- ALB in public subnets with security group allowing 80/443 only
+- All resources in default VPC public subnets — security enforced via security groups:
+  - ALB SG: inbound 80/443 from 0.0.0.0/0
+  - ECS SG: inbound from ALB SG only (on ports 9000/8000)
+  - RDS SG: inbound 5432 from ECS SG only
+  - Redis SG: inbound 6379 from ECS SG only
+- RDS `publicly_accessible = false` (no public endpoint despite public subnet)
 - Secrets stored in AWS SSM Parameter Store (populated by Terraform from GitHub Secrets)
 - ECS task role has least-privilege access (S3 media bucket read/write, SSM read)
 - ECR lifecycle policy: keep last 10 images, expire untagged after 7 days
