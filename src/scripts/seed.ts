@@ -63,7 +63,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const salesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
   const storeModuleService = container.resolve(Modules.STORE);
 
-  const countries = ["us", "gb", "de", "dk", "se", "fr", "es", "it"];
+  const countries = ["ph", "us", "gb", "de", "dk", "se", "fr", "es", "it"];
 
   logger.info("Seeding store data...");
   const [store] = await storeModuleService.listStores();
@@ -98,6 +98,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
         {
           currency_code: "eur",
         },
+        {
+          currency_code: "php",
+        },
       ],
     },
   });
@@ -126,11 +129,16 @@ export default async function seedDemoData({ container }: ExecArgs) {
           countries: ["gb", "de", "dk", "se", "fr", "es", "it"],
           payment_providers: ["pp_system_default"],
         },
+        {
+          name: "Philippines",
+          currency_code: "php",
+          countries: ["ph"],
+          payment_providers: ["pp_system_default"],
+        },
       ],
     },
   });
   const usRegion = regionResult[0];
-  const euRegion = regionResult[1];
   logger.info("Finished seeding regions.");
 
   logger.info("Seeding tax regions...");
@@ -246,6 +254,15 @@ export default async function seedDemoData({ container }: ExecArgs) {
           },
         ],
       },
+      {
+        name: "Philippines",
+        geo_zones: [
+          {
+            country_code: "ph",
+            type: "country",
+          },
+        ],
+      },
     ],
   });
 
@@ -279,6 +296,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
           {
             currency_code: "eur",
             amount: 999,
+          },
+          {
+            currency_code: "php",
+            amount: 15000, // PHP 150.00
           },
           {
             region_id: usRegion.id,
@@ -317,6 +338,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
           {
             currency_code: "eur",
             amount: 1999,
+          },
+          {
+            currency_code: "php",
+            amount: 30000, // PHP 300.00
           },
           {
             region_id: usRegion.id,
@@ -395,17 +420,17 @@ export default async function seedDemoData({ container }: ExecArgs) {
       product_categories: [
         {
           name: "Tulips",
-          description: "Fresh tulips in various colors",
+          description: "Handcrafted fuzzy wire tulips",
           is_active: true,
         },
         {
           name: "Roses",
-          description: "Classic roses for every occasion",
+          description: "Handcrafted fuzzy wire roses for every occasion",
           is_active: true,
         },
         {
           name: "Daisies",
-          description: "Cheerful daisies to brighten any day",
+          description: "Cheerful handcrafted daisies to brighten any day",
           is_active: true,
         },
         {
@@ -415,7 +440,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
         },
         {
           name: "Bouquets",
-          description: "Pre-arranged flower bouquets",
+          description: "Pre-arranged fuzzy wire flower bouquets",
           is_active: true,
         },
       ],
@@ -428,19 +453,19 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       products: [
         {
-          title: "Fresh Tulips",
+          title: "Tulips",
           category_ids: [
             categoryResult.find((cat) => cat.name === "Tulips")!.id,
           ],
           description:
-            "Beautiful fresh tulips, hand-picked from our greenhouse. Perfect for brightening any room or as a thoughtful gift.",
-          handle: "fresh-tulips",
+            "Beautiful tulips, hand-crafted with love. Perfect for brightening any room or as a thoughtful gift.",
+          handle: "tulips",
           weight: 200,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "https://images.unsplash.com/photo-1520763185298-1b434c919102?w=800",
+              url: "http://localhost:9000/static/tulips.jpg",
             },
           ],
           options: [
@@ -470,6 +495,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                   amount: 2299,
                   currency_code: "eur",
                 },
+                {
+                  amount: 20000, // PHP 200.00
+                  currency_code: "php",
+                },
               ],
             },
             {
@@ -487,6 +516,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 {
                   amount: 4199,
                   currency_code: "eur",
+                },
+                {
+                  amount: 50000, // PHP 500.00
+                  currency_code: "php",
                 },
               ],
             },
@@ -506,6 +539,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                   amount: 2299,
                   currency_code: "eur",
                 },
+                {
+                  amount: 20000,
+                  currency_code: "php",
+                },
               ],
             },
             {
@@ -523,6 +560,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 {
                   amount: 2299,
                   currency_code: "eur",
+                },
+                {
+                  amount: 20000,
+                  currency_code: "php",
                 },
               ],
             },
@@ -542,6 +583,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                   amount: 2299,
                   currency_code: "eur",
                 },
+                {
+                  amount: 20000,
+                  currency_code: "php",
+                },
               ],
             },
             {
@@ -560,6 +605,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                   amount: 2499,
                   currency_code: "eur",
                 },
+                {
+                  amount: 20000,
+                  currency_code: "php",
+                },
               ],
             },
           ],
@@ -570,19 +619,19 @@ export default async function seedDemoData({ container }: ExecArgs) {
           ],
         },
         {
-          title: "Fresh Roses",
+          title: "Roses",
           category_ids: [
             categoryResult.find((cat) => cat.name === "Roses")!.id,
           ],
           description:
-            "Elegant long-stem roses, perfect for expressing love, gratitude, or sympathy. Available in a variety of colors to suit any occasion.",
+            "Elegant crafted roses, perfect for expressing love, gratitude, or sympathy.",
           handle: "fresh-roses",
           weight: 300,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=800",
+              url: "http://localhost:9000/static/rose.png",
             },
           ],
           options: [
@@ -611,6 +660,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 {
                   amount: 4599,
                   currency_code: "eur",
+                },
+                {
+                  amount: 20000, // PHP 200.00
+                  currency_code: "php",
                 },
               ],
             },
@@ -648,6 +701,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                   amount: 4599,
                   currency_code: "eur",
                 },
+                {
+                  amount: 20000,
+                  currency_code: "php",
+                },
               ],
             },
             {
@@ -666,6 +723,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                   amount: 4599,
                   currency_code: "eur",
                 },
+                {
+                  amount: 20000,
+                  currency_code: "php",
+                },
               ],
             },
             {
@@ -683,6 +744,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 {
                   amount: 4599,
                   currency_code: "eur",
+                },
+                {
+                  amount: 20000,
+                  currency_code: "php",
                 },
               ],
             },
@@ -706,7 +771,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800",
+              url: "http://localhost:9000/static/daisies.jpg",
             },
           ],
           options: [
@@ -730,6 +795,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 {
                   amount: 1899,
                   currency_code: "eur",
+                },
+                {
+                  amount: 20000, // PHP 200.00
+                  currency_code: "php",
                 },
               ],
             },
@@ -770,7 +839,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "https://images.unsplash.com/photo-1563207153-f403bf289096?w=800",
+              url: "http://localhost:9000/static/craft.jpg",
             },
           ],
           options: [
@@ -800,6 +869,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                   amount: 1199,
                   currency_code: "eur",
                 },
+                {
+                  amount: 10000, // PHP 100.00
+                  currency_code: "php",
+                },
               ],
             },
             {
@@ -817,6 +890,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 {
                   amount: 899,
                   currency_code: "eur",
+                },
+                {
+                  amount: 10000,
+                  currency_code: "php",
                 },
               ],
             },
@@ -836,6 +913,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                   amount: 899,
                   currency_code: "eur",
                 },
+                {
+                  amount: 10000,
+                  currency_code: "php",
+                },
               ],
             },
             {
@@ -853,6 +934,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 {
                   amount: 899,
                   currency_code: "eur",
+                },
+                {
+                  amount: 10000,
+                  currency_code: "php",
                 },
               ],
             },
@@ -882,19 +967,19 @@ export default async function seedDemoData({ container }: ExecArgs) {
           ],
         },
         {
-          title: "Mixed Spring Bouquet",
+          title: "Bouquet",
           category_ids: [
             categoryResult.find((cat) => cat.name === "Bouquets")!.id,
           ],
           description:
             "A stunning pre-arranged bouquet featuring a mix of seasonal spring flowers including tulips, daisies, and greenery. Wrapped beautifully and ready to gift.",
-          handle: "mixed-spring-bouquet",
+          handle: "mixed-bouquet",
           weight: 400,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "https://images.unsplash.com/photo-1497276236755-0f85ba99a126?w=800",
+              url: "http://localhost:9000/static/bouquet.jpeg",
             },
           ],
           options: [
@@ -918,6 +1003,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 {
                   amount: 3699,
                   currency_code: "eur",
+                },
+                {
+                  amount: 30000, // PHP 300.00
+                  currency_code: "php",
                 },
               ],
             },
