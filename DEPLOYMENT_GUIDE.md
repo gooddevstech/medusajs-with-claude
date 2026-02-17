@@ -89,6 +89,7 @@ Set the following secrets in your GitHub repository (Settings â†’ Environments â
 | `TF_VAR_db_username` | RDS master username | `medusa_user` |
 | `TF_VAR_db_password` | RDS master password | `<strong-random-password>` |
 | `TF_VAR_db_name` | Database name | `medusa` |
+| `TF_VAR_redis_password` | Redis auth token | `<strong-random-password>` |
 | `MEDUSA_JWT_SECRET` | JWT secret for auth | `<random-64-char-string>` |
 | `COOKIE_SECRET` | Cookie secret | `<random-32-char-string>` |
 | `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` | Medusa publishable key | `pk_live_...` |
@@ -103,44 +104,20 @@ cp infra/terraform.tfvars.example infra/terraform.tfvars
 # Edit with your specific values
 ```
 
-### 6. SSM Parameters Setup
+### 6. SSM Parameters (Automated)
 
-Store secrets in AWS SSM Parameter Store (or use Terraform to create them):
+SSM Parameters are automatically created by the Terraform workflow after infrastructure deployment. The following parameters are created in AWS Systems Manager Parameter Store:
 
-```bash
-# Database URL
-aws ssm put-parameter \
-  --name /tindahang/database_url \
-  --value "postgresql://user:pass@host:5432/medusa" \
-  --type SecureString
+| Parameter | Source | Purpose |
+|-----------|--------|---------|
+| `/tindahang/database_url` | Constructed from RDS endpoint + DB credentials | Backend database connection |
+| `/tindahang/redis_url` | Constructed from ElastiCache endpoint + auth token | Backend Redis cache connection |
+| `/tindahang/jwt_secret` | `MEDUSA_JWT_SECRET` GitHub Secret | JWT token signing |
+| `/tindahang/cookie_secret` | `COOKIE_SECRET` GitHub Secret | Session cookie encryption |
+| `/tindahang/medusa_publishable_key` | `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` GitHub Secret | Frontend API access |
+| `/tindahang/revalidate_secret` | `REVALIDATE_SECRET` GitHub Secret | Next.js ISR webhooks |
 
-# Redis URL
-aws ssm put-parameter \
-  --name /tindahang/redis_url \
-  --value "rediss://default:password@host:6379" \
-  --type SecureString
-
-# Secrets
-aws ssm put-parameter \
-  --name /tindahang/jwt_secret \
-  --value "$MEDUSA_JWT_SECRET" \
-  --type SecureString
-
-aws ssm put-parameter \
-  --name /tindahang/cookie_secret \
-  --value "$COOKIE_SECRET" \
-  --type SecureString
-
-aws ssm put-parameter \
-  --name /tindahang/medusa_publishable_key \
-  --value "$NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY" \
-  --type SecureString
-
-aws ssm put-parameter \
-  --name /tindahang/revalidate_secret \
-  --value "$REVALIDATE_SECRET" \
-  --type SecureString
-```
+**No manual setup required.** Parameters are automatically created/updated when the Terraform workflow runs on the main branch.
 
 ## Deployment Process
 

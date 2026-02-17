@@ -91,6 +91,63 @@ ${{ steps.plan.outputs.stdout }}
           echo "ALB_DNS=$(terraform output -raw alb_dns_name)" >> $GITHUB_OUTPUT
           echo "BACKEND_ECR=$(terraform output -raw backend_repository_url)" >> $GITHUB_OUTPUT
           echo "STOREFRONT_ECR=$(terraform output -raw storefront_repository_url)" >> $GITHUB_OUTPUT
+          echo "RDS_ENDPOINT=$(terraform output -raw rds_endpoint)" >> $GITHUB_OUTPUT
+          echo "REDIS_ENDPOINT=$(terraform output -raw redis_endpoint)" >> $GITHUB_OUTPUT
+
+      - name: Create/Update SSM Parameters
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          # Database URL
+          DATABASE_URL="postgresql://${{ secrets.TF_VAR_db_username }}:${{ secrets.TF_VAR_db_password }}@${{ steps.outputs.outputs.RDS_ENDPOINT }}:5432/${{ secrets.TF_VAR_db_name }}"
+          aws ssm put-parameter \
+            --name /tindahang/database_url \
+            --value "$DATABASE_URL" \
+            --type SecureString \
+            --overwrite \
+            --region ${{ secrets.AWS_REGION }}
+          
+          # Redis URL
+          REDIS_URL="rediss://default:${{ secrets.TF_VAR_redis_password }}@${{ steps.outputs.outputs.REDIS_ENDPOINT }}:6379"
+          aws ssm put-parameter \
+            --name /tindahang/redis_url \
+            --value "$REDIS_URL" \
+            --type SecureString \
+            --overwrite \
+            --region ${{ secrets.AWS_REGION }}
+          
+          # JWT Secret
+          aws ssm put-parameter \
+            --name /tindahang/jwt_secret \
+            --value "${{ secrets.MEDUSA_JWT_SECRET }}" \
+            --type SecureString \
+            --overwrite \
+            --region ${{ secrets.AWS_REGION }}
+          
+          # Cookie Secret
+          aws ssm put-parameter \
+            --name /tindahang/cookie_secret \
+            --value "${{ secrets.COOKIE_SECRET }}" \
+            --type SecureString \
+            --overwrite \
+            --region ${{ secrets.AWS_REGION }}
+          
+          # Medusa Publishable Key
+          aws ssm put-parameter \
+            --name /tindahang/medusa_publishable_key \
+            --value "${{ secrets.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY }}" \
+            --type SecureString \
+            --overwrite \
+            --region ${{ secrets.AWS_REGION }}
+          
+          # Revalidate Secret
+          aws ssm put-parameter \
+            --name /tindahang/revalidate_secret \
+            --value "${{ secrets.REVALIDATE_SECRET }}" \
+            --type SecureString \
+            --overwrite \
+            --region ${{ secrets.AWS_REGION }}
+          
+          echo "✅ SSM Parameters created/updated successfully"
 
       - name: Create Action Artifacts
         if: always()
