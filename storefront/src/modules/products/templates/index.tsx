@@ -32,17 +32,17 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   return (
     <>
       <div
-        className="content-container  flex flex-col small:flex-row small:items-start py-6 relative"
+        className="content-container flex flex-col small:flex-row small:items-start py-8 small:py-12 relative gap-x-8"
         data-testid="product-container"
       >
-        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-6">
+        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[350px] w-full py-8 gap-y-8">
           <ProductInfo product={product} />
           <ProductTabs product={product} />
         </div>
         <div className="block w-full relative">
           <ImageGallery images={images} />
         </div>
-        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-12">
+        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[350px] w-full py-8 gap-y-8">
           <ProductOnboardingCta />
           <Suspense
             fallback={
@@ -55,10 +55,35 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           >
             <ProductActionsWrapper id={product.id} region={region} />
           </Suspense>
+          {/* Delivery Info */}
+          <div className="border border-bloom-charcoal/10 p-6 flex flex-col gap-4">
+            <h4 className="font-heading text-lg text-bloom-charcoal">Delivery Information</h4>
+            <div className="flex items-start gap-3">
+              <span className="text-bloom-sage text-lg">🚚</span>
+              <div>
+                <p className="font-body text-sm font-medium text-bloom-charcoal">Same-Day Delivery</p>
+                <p className="font-body text-xs text-bloom-charcoal-light">Order before 2pm for delivery today</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-bloom-sage text-lg">🌿</span>
+              <div>
+                <p className="font-body text-sm font-medium text-bloom-charcoal">Freshness Guaranteed</p>
+                <p className="font-body text-xs text-bloom-charcoal-light">7-day freshness guarantee on all blooms</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-bloom-sage text-lg">🎁</span>
+              <div>
+                <p className="font-body text-sm font-medium text-bloom-charcoal">Gift Wrapping</p>
+                <p className="font-body text-xs text-bloom-charcoal-light">Complimentary gift wrapping available</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div
-        className="content-container my-16 small:my-32"
+        className="content-container my-16 small:my-24"
         data-testid="related-products-container"
       >
         <Suspense fallback={<SkeletonRelatedProducts />}>

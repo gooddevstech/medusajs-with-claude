@@ -11,21 +11,25 @@ export default async function Footer() {
   const productCategories = await listCategories()
 
   return (
-    <footer className="border-t border-ui-border-base w-full">
+    <footer className="bg-bloom-charcoal text-white w-full">
       <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-40">
-          <div>
+        <div className="flex flex-col gap-y-8 xsmall:flex-row items-start justify-between py-16 small:py-24">
+          <div className="flex flex-col gap-y-4">
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
+              className="font-heading text-3xl text-white hover:text-bloom-blush transition-colors"
             >
               The Bloom Shop
             </LocalizedClientLink>
+            <p className="text-white/60 font-body text-sm max-w-xs leading-relaxed">
+              Handcrafted bouquets and floral arrangements for every occasion.
+              Delivering beauty and joy, one bloom at a time.
+            </p>
           </div>
-          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
+          <div className="font-body text-sm gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
             {productCategories && productCategories?.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
+              <div className="flex flex-col gap-y-3">
+                <span className="text-white font-semibold tracking-wider uppercase text-xs">
                   Categories
                 </span>
                 <ul
@@ -46,13 +50,13 @@ export default async function Footer() {
 
                     return (
                       <li
-                        className="flex flex-col gap-2 text-ui-fg-subtle txt-small"
+                        className="flex flex-col gap-2 text-white/60"
                         key={c.id}
                       >
                         <LocalizedClientLink
                           className={clx(
-                            "hover:text-ui-fg-base",
-                            children && "txt-small-plus"
+                            "hover:text-bloom-blush transition-colors",
+                            children && "font-medium text-white/80"
                           )}
                           href={`/categories/${c.handle}`}
                           data-testid="category-link"
@@ -65,7 +69,7 @@ export default async function Footer() {
                               children.map((child) => (
                                 <li key={child.id}>
                                   <LocalizedClientLink
-                                    className="hover:text-ui-fg-base"
+                                    className="hover:text-bloom-blush transition-colors"
                                     href={`/categories/${child.handle}`}
                                     data-testid="category-link"
                                   >
@@ -82,13 +86,13 @@ export default async function Footer() {
               </div>
             )}
             {collections && collections.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
+              <div className="flex flex-col gap-y-3">
+                <span className="text-white font-semibold tracking-wider uppercase text-xs">
                   Collections
                 </span>
                 <ul
                   className={clx(
-                    "grid grid-cols-1 gap-2 text-ui-fg-subtle txt-small",
+                    "grid grid-cols-1 gap-2 text-white/60",
                     {
                       "grid-cols-2": (collections?.length || 0) > 3,
                     }
@@ -97,7 +101,7 @@ export default async function Footer() {
                   {collections?.slice(0, 6).map((c) => (
                     <li key={c.id}>
                       <LocalizedClientLink
-                        className="hover:text-ui-fg-base"
+                        className="hover:text-bloom-blush transition-colors"
                         href={`/collections/${c.handle}`}
                       >
                         {c.title}
@@ -107,11 +111,34 @@ export default async function Footer() {
                 </ul>
               </div>
             )}
+            <div className="flex flex-col gap-y-3">
+              <span className="text-white font-semibold tracking-wider uppercase text-xs">
+                Help
+              </span>
+              <ul className="grid grid-cols-1 gap-2 text-white/60">
+                <li>
+                  <LocalizedClientLink
+                    href="/account"
+                    className="hover:text-bloom-blush transition-colors"
+                  >
+                    My Account
+                  </LocalizedClientLink>
+                </li>
+                <li>
+                  <LocalizedClientLink
+                    href="/cart"
+                    className="hover:text-bloom-blush transition-colors"
+                  >
+                    Cart
+                  </LocalizedClientLink>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
-        <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
-          <Text className="txt-compact-small">
-            © {new Date().getFullYear()} The Bloom Shop. All rights reserved.
+        <div className="flex w-full py-6 justify-between border-t border-white/10">
+          <Text className="text-white/40 text-xs font-body">
+            &copy; {new Date().getFullYear()} The Bloom Shop. All rights reserved.
           </Text>
         </div>
       </div>

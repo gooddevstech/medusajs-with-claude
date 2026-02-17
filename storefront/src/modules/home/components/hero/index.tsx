@@ -15,12 +15,12 @@ const Hero = () => {
       <div className="absolute inset-0 bg-black/30 z-10" />
       <div className="absolute inset-0 z-20 flex flex-col justify-center items-center text-center px-6 small:px-32 gap-6">
         <Heading
-          level="h1"
-          className="text-4xl small:text-6xl leading-tight text-white font-bold drop-shadow-lg"
+          level="h2"
+          className="text-3xl small:text-5xl font-heading text-bloom-charcoal mb-6 leading-tight text-white font-bold drop-shadow-lg"
         >
           Flowers That Last Forever
         </Heading>
-        <p className="text-lg small:text-xl text-white/90 max-w-2xl drop-shadow-md">
+        <p className="text-lg small:text-xl text-white/90 max-w-2xl font-body drop-shadow-md">
           Handcrafted with Love ❤️🌷
         </p>
         <LocalizedClientLink
