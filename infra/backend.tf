@@ -1,19 +1,7 @@
-# Note: This file shows the S3 backend configuration
-# Since backend is configured in providers.tf via Terraform Cloud,
-# you can optionally use this configuration for local S3 backend instead
-
-# To use S3 backend instead of Terraform Cloud, replace the cloud block in providers.tf with:
-# terraform {
-#   backend "s3" {
-#     bucket         = "gooddevs-devops-base-infra-terraform"
-#     key            = "tindahang/production/terraform.tfstate"
-#     region         = "ap-southeast-1"
-#     encrypt        = true
-#     dynamodb_table = "gooddevs-devops-base-infra-terraform-lock"
-#   }
-# }
-
-# Ensure S3 bucket and DynamoDB table exist before terraform init:
+# Backend configuration is in providers.tf (S3 + DynamoDB lock)
+#
+# Prerequisites (one-time setup):
+#
 # aws s3api create-bucket \
 #   --bucket gooddevs-devops-base-infra-terraform \
 #   --region ap-southeast-1 \
