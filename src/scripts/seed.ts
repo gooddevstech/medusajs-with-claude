@@ -157,11 +157,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       locations: [
         {
-          name: "Bloom Shop Greenhouse",
+          name: "Bloom Shop Warehouse",
           address: {
-            city: "Portland",
-            country_code: "US",
-            address_1: "123 Garden Lane",
+            city: "Makati",
+            country_code: "PH",
+            address_1: "123 Ayala Avenue",
           },
         },
       ],
@@ -275,13 +275,31 @@ export default async function seedDemoData({ container }: ExecArgs) {
     },
   });
 
+  const naZoneId = fulfillmentSet.service_zones[0].id;
+  const euZoneId = fulfillmentSet.service_zones[1].id;
+  const phZoneId = fulfillmentSet.service_zones[2].id;
+
+  const shippingRules = [
+    {
+      attribute: "enabled_in_store",
+      value: "true",
+      operator: "eq",
+    },
+    {
+      attribute: "is_return",
+      value: "false",
+      operator: "eq",
+    },
+  ];
+
   await createShippingOptionsWorkflow(container).run({
     input: [
+      // North America
       {
         name: "Standard Delivery",
         price_type: "flat",
         provider_id: "manual_manual",
-        service_zone_id: fulfillmentSet.service_zones[0].id,
+        service_zone_id: naZoneId,
         shipping_profile_id: shippingProfile.id,
         type: {
           label: "Standard",
@@ -294,36 +312,17 @@ export default async function seedDemoData({ container }: ExecArgs) {
             amount: 999, // $9.99
           },
           {
-            currency_code: "eur",
-            amount: 999,
-          },
-          {
-            currency_code: "php",
-            amount: 15000, // PHP 150.00
-          },
-          {
             region_id: usRegion.id,
             amount: 999,
           },
         ],
-        rules: [
-          {
-            attribute: "enabled_in_store",
-            value: "true",
-            operator: "eq",
-          },
-          {
-            attribute: "is_return",
-            value: "false",
-            operator: "eq",
-          },
-        ],
+        rules: shippingRules,
       },
       {
         name: "Same-Day Delivery",
         price_type: "flat",
         provider_id: "manual_manual",
-        service_zone_id: fulfillmentSet.service_zones[0].id,
+        service_zone_id: naZoneId,
         shipping_profile_id: shippingProfile.id,
         type: {
           label: "Express",
@@ -336,30 +335,89 @@ export default async function seedDemoData({ container }: ExecArgs) {
             amount: 1999, // $19.99
           },
           {
-            currency_code: "eur",
-            amount: 1999,
-          },
-          {
-            currency_code: "php",
-            amount: 30000, // PHP 300.00
-          },
-          {
             region_id: usRegion.id,
             amount: 1999,
           },
         ],
-        rules: [
+        rules: shippingRules,
+      },
+      // Europe
+      {
+        name: "Standard Delivery",
+        price_type: "flat",
+        provider_id: "manual_manual",
+        service_zone_id: euZoneId,
+        shipping_profile_id: shippingProfile.id,
+        type: {
+          label: "Standard",
+          description: "Delivery in 3-5 business days.",
+          code: "standard",
+        },
+        prices: [
           {
-            attribute: "enabled_in_store",
-            value: "true",
-            operator: "eq",
-          },
-          {
-            attribute: "is_return",
-            value: "false",
-            operator: "eq",
+            currency_code: "eur",
+            amount: 999, // €9.99
           },
         ],
+        rules: shippingRules,
+      },
+      {
+        name: "Express Delivery",
+        price_type: "flat",
+        provider_id: "manual_manual",
+        service_zone_id: euZoneId,
+        shipping_profile_id: shippingProfile.id,
+        type: {
+          label: "Express",
+          description: "Delivery in 1-2 business days.",
+          code: "express",
+        },
+        prices: [
+          {
+            currency_code: "eur",
+            amount: 1999, // €19.99
+          },
+        ],
+        rules: shippingRules,
+      },
+      // Philippines
+      {
+        name: "Standard Delivery",
+        price_type: "flat",
+        provider_id: "manual_manual",
+        service_zone_id: phZoneId,
+        shipping_profile_id: shippingProfile.id,
+        type: {
+          label: "Standard",
+          description: "Delivery in 3-5 business days.",
+          code: "standard",
+        },
+        prices: [
+          {
+            currency_code: "php",
+            amount: 15000, // PHP 150.00
+          },
+        ],
+        rules: shippingRules,
+      },
+      {
+        name: "Express Delivery",
+        price_type: "flat",
+        provider_id: "manual_manual",
+        service_zone_id: phZoneId,
+        shipping_profile_id: shippingProfile.id,
+        type: {
+          label: "Express",
+          description: "Same-day delivery for Metro Manila orders before 2 PM.",
+          code: "express",
+        },
+        prices: [
+          {
+            currency_code: "php",
+            amount: 30000, // PHP 300.00
+          },
+        ],
+        rules: shippingRules,
       },
     ],
   });
@@ -683,6 +741,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                   amount: 8299,
                   currency_code: "eur",
                 },
+                {
+                  amount: 50000, // PHP 500.00
+                  currency_code: "php",
+                },
               ],
             },
             {
@@ -816,6 +878,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 {
                   amount: 3199,
                   currency_code: "eur",
+                },
+                {
+                  amount: 35000, // PHP 350.00
+                  currency_code: "php",
                 },
               ],
             },
@@ -957,6 +1023,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                   amount: 1499,
                   currency_code: "eur",
                 },
+                {
+                  amount: 15000, // PHP 150.00
+                  currency_code: "php",
+                },
               ],
             },
           ],
@@ -1025,6 +1095,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                   amount: 5499,
                   currency_code: "eur",
                 },
+                {
+                  amount: 50000, // PHP 500.00
+                  currency_code: "php",
+                },
               ],
             },
             {
@@ -1041,6 +1115,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 {
                   amount: 7399,
                   currency_code: "eur",
+                },
+                {
+                  amount: 70000, // PHP 700.00
+                  currency_code: "php",
                 },
               ],
             },
