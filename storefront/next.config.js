@@ -25,10 +25,15 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+    unoptimized: process.env.NODE_ENV === "development",
     remotePatterns: [
       {
         protocol: "http",
         hostname: "localhost",
+      },
+      {
+        protocol: "http",
+        hostname: "medusa",
       },
       {
         protocol: "https",
