@@ -18,18 +18,15 @@ module "ecs" {
   source  = "terraform-aws-modules/ecs/aws"
   version = "~> 5.0"
 
-  name = "${var.project_name}-ecs"
+  cluster_name = "${var.project_name}-ecs"
 
   # Cluster configuration
-  cluster_settings = {
-    name  = "containerInsights"
-    value = "enabled"
-  }
-
-  # Task definitions
-  task_definition = {
-    family = var.project_name
-  }
+  cluster_settings = [
+    {
+      name  = "containerInsights"
+      value = "enabled"
+    }
+  ]
 
   # Services (will be managed separately for flexibility)
   services = {}
@@ -187,18 +184,17 @@ resource "aws_ecs_service" "backend" {
   }
 
   load_balancer {
-    target_group_arn = module.alb.target_group_arns[1]
+    target_group_arn = module.alb.target_groups["backend"].arn
     container_name   = "backend"
     container_port   = 9000
   }
 
-  deployment_configuration {
-    maximum_percent         = 200
-    minimum_healthy_percent = 100
-    deployment_circuit_breaker {
-      enable   = true
-      rollback = true
-    }
+  deployment_maximum_percent         = 200
+  deployment_minimum_healthy_percent = 100
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
   }
 
   tags = merge(var.tags, { Name = "${var.project_name}-backend-service" })
@@ -225,18 +221,17 @@ resource "aws_ecs_service" "storefront" {
   }
 
   load_balancer {
-    target_group_arn = module.alb.target_group_arns[0]
+    target_group_arn = module.alb.target_groups["storefront"].arn
     container_name   = "storefront"
     container_port   = 8000
   }
 
-  deployment_configuration {
-    maximum_percent         = 200
-    minimum_healthy_percent = 100
-    deployment_circuit_breaker {
-      enable   = true
-      rollback = true
-    }
+  deployment_maximum_percent         = 200
+  deployment_minimum_healthy_percent = 100
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
   }
 
   tags = merge(var.tags, { Name = "${var.project_name}-storefront-service" })

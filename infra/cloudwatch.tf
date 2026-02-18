@@ -19,8 +19,8 @@ resource "aws_cloudwatch_metric_alarm" "alb_backend_unhealthy_hosts" {
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
-    TargetGroup  = module.alb.target_group_names[1]
-    LoadBalancer = module.alb.lb_arn_suffix
+    TargetGroup  = module.alb.target_groups["backend"].arn_suffix
+    LoadBalancer = module.alb.arn_suffix
   }
 }
 
@@ -37,7 +37,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_storefront_unhealthy_hosts" {
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
-    TargetGroup  = module.alb.target_group_names[0]
+    TargetGroup  = module.alb.target_groups["storefront"].arn_suffix
     LoadBalancer = module.alb.arn_suffix
   }
 }
@@ -56,7 +56,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
-    LoadBalancer = module.alb.lb_arn_suffix
+    LoadBalancer = module.alb.arn_suffix
   }
 }
 
@@ -112,7 +112,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
-    DBInstanceIdentifier = module.rds.db_instance_id
+    DBInstanceIdentifier = module.rds.db_instance_identifier
   }
 }
 
@@ -130,6 +130,6 @@ resource "aws_cloudwatch_metric_alarm" "rds_storage_low" {
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
-    DBInstanceIdentifier = module.rds.db_instance_id
+    DBInstanceIdentifier = module.rds.db_instance_identifier
   }
 }

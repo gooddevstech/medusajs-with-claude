@@ -44,17 +44,17 @@ module "rds" {
   copy_tags_to_snapshot   = true
 
   # Monitoring
-  enabled_cloudwatch_logs_exports  = ["postgresql"]
-  create_cloudwatch_log_group      = true
-  cloudwatch_log_retention_in_days = 7
+  enabled_cloudwatch_logs_exports        = ["postgresql"]
+  create_cloudwatch_log_group            = true
+  cloudwatch_log_group_retention_in_days = 7
 
   # Enhanced monitoring
-  monitoring_interval                = 60
-  monitoring_role_arn                = aws_iam_role.rds_monitoring.arn
-  enable_iam_database_authentication = true
+  monitoring_interval                 = 60
+  monitoring_role_arn                 = aws_iam_role.rds_monitoring.arn
+  iam_database_authentication_enabled = true
 
   # Final snapshot
-  final_snapshot_identifier = "${var.project_name}-postgres-final-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
+  final_snapshot_identifier_prefix = "${var.project_name}-postgres-final"
 
   tags = merge(var.tags, { Name = "${var.project_name}-postgres" })
 }

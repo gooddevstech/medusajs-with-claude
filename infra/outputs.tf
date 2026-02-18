@@ -44,7 +44,7 @@ output "alb_dns_name" {
 
 output "alb_arn" {
   description = "ALB ARN"
-  value       = module.alb.lb_arn
+  value       = module.alb.arn
 }
 
 output "alb_zone_id" {
@@ -54,12 +54,12 @@ output "alb_zone_id" {
 
 output "backend_target_group_arn" {
   description = "Backend target group ARN"
-  value       = module.alb.target_group_arns[1]
+  value       = module.alb.target_groups["backend"].arn
 }
 
 output "storefront_target_group_arn" {
   description = "Storefront target group ARN"
-  value       = module.alb.target_group_arns[0]
+  value       = module.alb.target_groups["storefront"].arn
 }
 
 # RDS Outputs
@@ -71,7 +71,7 @@ output "rds_endpoint" {
 
 output "rds_instance_id" {
   description = "RDS database instance ID"
-  value       = module.rds.db_instance_id
+  value       = module.rds.db_instance_identifier
 }
 
 output "rds_port" {
@@ -105,7 +105,7 @@ output "media_bucket_arn" {
 # CloudFront Outputs
 output "cloudfront_domain_name" {
   description = "CloudFront distribution domain name"
-  value       = module.cloudfront.cloudfront_domain_name
+  value       = module.cloudfront.cloudfront_distribution_domain_name
 }
 
 output "cloudfront_distribution_id" {

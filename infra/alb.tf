@@ -13,39 +13,40 @@ module "alb" {
   enable_http2                     = true
   enable_cross_zone_load_balancing = true
 
-  # HTTPS listener
-  https_listeners = [
-    {
-      port               = 443
-      protocol           = "HTTPS"
-      certificate_arn    = aws_acm_certificate_validation.main.certificate_arn
-      action_type        = "forward"
-      target_group_index = 0 # Default to storefront
-    }
-  ]
-
-  # HTTP -> HTTPS redirect
-  http_listeners = [
-    {
-      port        = 80
-      protocol    = "HTTP"
-      action_type = "redirect"
+  # Listeners (v9 API uses a map of listeners)
+  listeners = {
+    http_redirect = {
+      port     = 80
+      protocol = "HTTP"
       redirect = {
         port        = "443"
         protocol    = "HTTPS"
         status_code = "HTTP_301"
       }
     }
-  ]
 
-  # Target groups
-  target_groups = [
-    {
-      name             = "${var.project_name}-storefront-tg"
-      backend_protocol = "HTTP"
-      backend_port     = 8000
-      target_type      = "ip"
+    https = {
+      port            = 443
+      protocol        = "HTTPS"
+      certificate_arn = aws_acm_certificate_validation.main.certificate_arn
+
+      forward = {
+        target_group_key = "storefront"
+      }
+    }
+  }
+
+  # Target groups (v9 API uses a map of target groups)
+  target_groups = {
+    storefront = {
+      name              = "${var.project_name}-storefront-tg"
+      protocol          = "HTTP"
+      port              = 8000
+      target_type       = "ip"
+      create_attachment = false
+
       health_check = {
+        enabled             = true
         healthy_threshold   = 2
         unhealthy_threshold = 2
         timeout             = 5
@@ -53,13 +54,17 @@ module "alb" {
         path                = "/"
         matcher             = "200"
       }
-    },
-    {
-      name             = "${var.project_name}-backend-tg"
-      backend_protocol = "HTTP"
-      backend_port     = 9000
-      target_type      = "ip"
+    }
+
+    backend = {
+      name              = "${var.project_name}-backend-tg"
+      protocol          = "HTTP"
+      port              = 9000
+      target_type       = "ip"
+      create_attachment = false
+
       health_check = {
+        enabled             = true
         healthy_threshold   = 2
         unhealthy_threshold = 3
         timeout             = 5
@@ -68,7 +73,7 @@ module "alb" {
         matcher             = "200-399"
       }
     }
-  ]
+  }
 
   tags = merge(var.tags, { Name = "${var.project_name}-alb" })
 }

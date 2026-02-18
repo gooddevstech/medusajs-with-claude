@@ -27,3 +27,6 @@ build
 infra/terraform.tfvars
 *.tfvars
 !*.tfvars.example
+infra/.terraform*
+
+.draft/

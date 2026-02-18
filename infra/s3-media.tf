@@ -4,7 +4,6 @@ module "s3_media" {
   version = "~> 4.0"
 
   bucket = "${var.project_name}-media-${data.aws_caller_identity.current.account_id}"
-  acl    = "private"
 
   # Versioning
   versioning = {
