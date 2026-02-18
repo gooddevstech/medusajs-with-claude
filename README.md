@@ -1,76 +1,96 @@
-<p align="center">
-  <a href="https://www.medusajs.com">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/59018053/229103275-b5e482bb-4601-46e6-8142-244f531cebdb.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    <img alt="Medusa logo" src="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    </picture>
-  </a>
-</p>
-<h1 align="center">
-  Medusa
-</h1>
+# Tindahang AI - The Bloom Shop
 
-<h4 align="center">
-  <a href="https://docs.medusajs.com">Documentation</a> |
-  <a href="https://www.medusajs.com">Website</a>
-</h4>
+A production-ready e-commerce platform for an online flower shop, built on [MedusaJS v2](https://medusajs.com) with a [Next.js 15](https://nextjs.org) storefront, deployed to AWS.
 
-<p align="center">
-  Building blocks for digital commerce
-</p>
-<p align="center">
-  <a href="https://github.com/medusajs/medusa/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs welcome!" />
-  </a>
-    <a href="https://www.producthunt.com/posts/medusa"><img src="https://img.shields.io/badge/Product%20Hunt-%231%20Product%20of%20the%20Day-%23DA552E" alt="Product Hunt"></a>
-  <a href="https://discord.gg/xpCwq3Kfn8">
-    <img src="https://img.shields.io/badge/chat-on%20discord-7289DA.svg" alt="Discord Chat" />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=medusajs">
-    <img src="https://img.shields.io/twitter/follow/medusajs.svg?label=Follow%20@medusajs" alt="Follow @medusajs" />
-  </a>
-</p>
+## Quick Start (Local Development)
 
-## Compatibility
+### Prerequisites
+- Docker & Docker Compose
+- Node.js 20+
+- Yarn
 
-This starter is compatible with versions >= 2 of `@medusajs/medusa`. 
+### With Docker (recommended)
+```bash
+# Start all services (Postgres, Redis, Medusa backend, Storefront)
+docker compose up --build -d
 
-## Getting Started
+# Seed the database with demo data
+docker compose exec medusa yarn seed
 
-Visit the [Quickstart Guide](https://docs.medusajs.com/learn/installation) to set up a server.
+# Generate a publishable API key for the storefront
+docker compose exec medusa medusa exec ./src/scripts/create-publishable-key.ts
+```
 
-Visit the [Docs](https://docs.medusajs.com/learn/installation#get-started) to learn more about our system requirements.
+- Backend + Admin: http://localhost:9000
+- Storefront: http://localhost:8000
+- Admin Dashboard: http://localhost:5173
 
-## What is Medusa
+### Without Docker
+```bash
+# Backend (requires Postgres + Redis running locally)
+cp .env.template .env
+# Edit .env with your DATABASE_URL and REDIS_URL
+yarn install
+yarn dev
 
-Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.
+# Storefront (in a separate terminal)
+cd storefront
+cp .env.template .env.local
+yarn install
+yarn dev
+```
 
-Learn more about [Medusa’s architecture](https://docs.medusajs.com/learn/introduction/architecture) and [commerce modules](https://docs.medusajs.com/learn/fundamentals/modules/commerce-modules) in the Docs.
+## Project Structure
 
-## Build with AI Agents
+```
+src/                    # MedusaJS v2 backend
+  api/                  # Custom API routes
+  modules/              # Custom commerce modules
+  workflows/            # Business logic workflows
+  subscribers/          # Event handlers
+  scripts/              # Seed & utility scripts
+  admin/                # Admin dashboard customizations
+storefront/             # Next.js 15 storefront ("The Bloom Shop")
+infra/                  # Terraform IaC for AWS deployment
+.github/workflows/      # CI/CD pipelines
+```
 
-### Claude Code Plugin
+## Tech Stack
 
-If you use AI agents like Claude Code, check out the [medusa-dev Claude Code plugin](https://github.com/medusajs/medusa-claude-plugins).
+| Layer | Technology |
+|-------|-----------|
+| Backend | MedusaJS v2.13.1, Node.js 20, TypeScript |
+| Frontend | Next.js 15, React 19, Tailwind CSS, Medusa JS SDK |
+| Database | PostgreSQL 16 |
+| Cache & Events | Redis 7 |
+| Infrastructure | AWS (ECS Fargate, RDS, ElastiCache, ALB, CloudFront) |
+| IaC | Terraform with terraform-aws-modules |
+| CI/CD | GitHub Actions, Docker |
 
-### Other Agents
+## Deployment
 
-If you use AI agents other than Claude Code, copy the [skills directory](https://github.com/medusajs/medusa-claude-plugins/tree/main/plugins/medusa-dev/skills) into your agent's relevant `skills` directory.
+This project includes full production infrastructure. See [DEPLOYMENT_README.md](./DEPLOYMENT_README.md) for setup instructions.
 
-### MCP Server
+**CI/CD triggers:**
+- Push to `src/` or `package.json` → deploys backend
+- Push to `storefront/` → deploys storefront
+- Push to `infra/` → runs Terraform plan + apply
 
-You can also add the MCP server `https://docs.medusajs.com/mcp` to your AI agents to answer questions related to Medusa. The `medusa-dev` Claude Code plugin includes this MCP server by default.
+## Testing
 
-## Community & Contributions
+```bash
+yarn test:unit                    # Unit tests
+yarn test:integration:http        # HTTP integration tests
+yarn test:integration:modules     # Module integration tests
+```
 
-The community and core team are available in [GitHub Discussions](https://github.com/medusajs/medusa/discussions), where you can ask for support, discuss roadmap, and share ideas.
+## Documentation
 
-Join our [Discord server](https://discord.com/invite/medusajs) to meet other community members.
+- [DEPLOYMENT_README.md](./DEPLOYMENT_README.md) - Infrastructure & CI/CD overview
+- [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Detailed deployment setup
+- [QUICKSTART_DEPLOYMENT.md](./QUICKSTART_DEPLOYMENT.md) - Fast-track deployment commands
+- [MedusaJS Docs](https://docs.medusajs.com) - Framework documentation
 
-## Other channels
+## AI-Assisted Development
 
-- [GitHub Issues](https://github.com/medusajs/medusa/issues)
-- [Twitter](https://twitter.com/medusajs)
-- [LinkedIn](https://www.linkedin.com/company/medusajs)
-- [Medusa Blog](https://medusajs.com/blog/)
+This project uses the [medusa-dev Claude Code plugin](https://github.com/medusajs/medusa-claude-plugins) for AI-assisted development with specialized skills and MCP server integration. See [CLAUDE.md](./CLAUDE.md) for project context used by Claude Code.
