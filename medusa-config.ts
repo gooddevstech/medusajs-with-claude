@@ -32,6 +32,22 @@ module.exports = defineConfig({
         redisUrl: process.env.REDIS_URL,
         ttl: 30
       }
+    },
+    payment: {
+      resolve: "@medusajs/medusa/payment",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/payrex",
+            id: "payrex",
+            options: {
+              secretKey: process.env.PAYREX_SECRET_KEY,
+              webhookSecret: process.env.PAYREX_WEBHOOK_SECRET,
+              captureType: "automatic",
+            }
+          }
+        ]
+      }
     }
   },
   admin: {

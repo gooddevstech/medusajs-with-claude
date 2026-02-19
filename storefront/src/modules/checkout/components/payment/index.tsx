@@ -1,7 +1,7 @@
 "use client"
 
 import { RadioGroup } from "@headlessui/react"
-import { isStripeLike, paymentInfoMap } from "@lib/constants"
+import { isPayRex, isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
@@ -174,6 +174,22 @@ const Payment = ({
                 data-testid="payment-method-summary"
               >
                 Gift card
+              </Text>
+            </div>
+          )}
+
+          {isPayRex(selectedPaymentMethod) && activeSession?.data?.qr_code && (
+            <div className="mt-4 p-4 border border-ui-border-base rounded-lg flex flex-col items-center gap-y-3">
+              <Text className="txt-medium-plus text-ui-fg-base">
+                Scan to Pay with QRPh
+              </Text>
+              <img
+                src={activeSession.data.qr_code as string}
+                alt="QRPh payment QR code"
+                className="w-48 h-48"
+              />
+              <Text className="txt-small text-ui-fg-subtle text-center">
+                Open your banking app (BDO, BPI, GCash, Maya, UnionBank, etc.) and scan this QR code to complete your payment.
               </Text>
             </div>
           )}

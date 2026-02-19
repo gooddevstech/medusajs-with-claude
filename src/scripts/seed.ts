@@ -133,7 +133,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
           name: "Philippines",
           currency_code: "php",
           countries: ["ph"],
-          payment_providers: ["pp_system_default"],
+          payment_providers: ["pp_system_default", "pp_payrex_payrex"],
         },
       ],
     },

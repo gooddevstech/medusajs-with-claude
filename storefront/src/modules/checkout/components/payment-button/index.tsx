@@ -1,11 +1,12 @@
 "use client"
 
-import { isManual, isStripeLike } from "@lib/constants"
+import { isManual, isPayRex, isStripeLike } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
+import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@medusajs/ui"
+import { Button, Text } from "@medusajs/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
-import React, { useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import ErrorMessage from "../error-message"
 
 type PaymentButtonProps = {
@@ -38,6 +39,14 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     case isManual(paymentSession?.provider_id):
       return (
         <ManualTestPaymentButton notReady={notReady} data-testid={dataTestId} />
+      )
+    case isPayRex(paymentSession?.provider_id):
+      return (
+        <PayRexQRPhButton
+          notReady={notReady}
+          cart={cart}
+          data-testid={dataTestId}
+        />
       )
     default:
       return <Button disabled>Select a payment method</Button>
@@ -186,6 +195,98 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
         error={errorMessage}
         data-testid="manual-payment-error-message"
       />
+    </>
+  )
+}
+
+const POLL_INTERVAL_MS = 3000
+const POLL_TIMEOUT_MS = 5 * 60 * 1000
+
+const PayRexQRPhButton = ({
+  cart,
+  notReady,
+  "data-testid": dataTestId,
+}: {
+  cart: HttpTypes.StoreCart
+  notReady: boolean
+  "data-testid"?: string
+}) => {
+  const [waiting, setWaiting] = useState(false)
+  const [timedOut, setTimedOut] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const intervalRef = useRef<number | null>(null)
+  const timeoutRef = useRef<number | null>(null)
+
+  const stopPolling = () => {
+    if (intervalRef.current) window.clearInterval(intervalRef.current)
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
+  }
+
+  const startPolling = () => {
+    setWaiting(true)
+    setTimedOut(false)
+    setErrorMessage(null)
+
+    timeoutRef.current = window.setTimeout(() => {
+      stopPolling()
+      setWaiting(false)
+      setTimedOut(true)
+    }, POLL_TIMEOUT_MS)
+
+    intervalRef.current = window.setInterval(async () => {
+      try {
+        const { cart: updatedCart } = await sdk.store.cart.retrieve(cart.id, {
+          fields: "payment_collection.payment_sessions.*",
+        })
+        const session = updatedCart?.payment_collection?.payment_sessions?.[0]
+        if (session?.status === "authorized") {
+          stopPolling()
+          await placeOrder().catch((err) => {
+            setErrorMessage(err.message)
+            setWaiting(false)
+          })
+        }
+      } catch {
+        // silent — keep polling
+      }
+    }, POLL_INTERVAL_MS)
+  }
+
+  useEffect(() => () => stopPolling(), [])
+
+  if (timedOut) {
+    return (
+      <>
+        <Text className="txt-small text-ui-fg-subtle mb-2">
+          Payment not detected. Please try again or refresh the QR code.
+        </Text>
+        <Button
+          size="large"
+          onClick={() => {
+            setTimedOut(false)
+            startPolling()
+          }}
+          data-testid={dataTestId}
+        >
+          Check payment again
+        </Button>
+        <ErrorMessage error={errorMessage} data-testid="payrex-payment-error" />
+      </>
+    )
+  }
+
+  return (
+    <>
+      <Button
+        disabled={notReady || waiting}
+        isLoading={waiting}
+        onClick={startPolling}
+        size="large"
+        data-testid={dataTestId}
+      >
+        {waiting ? "Waiting for payment…" : "I have scanned and paid"}
+      </Button>
+      <ErrorMessage error={errorMessage} data-testid="payrex-payment-error" />
     </>
   )
 }
