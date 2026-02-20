@@ -28,7 +28,7 @@ module "alb" {
     https = {
       port            = 443
       protocol        = "HTTPS"
-      certificate_arn = aws_acm_certificate_validation.main.certificate_arn
+      certificate_arn = aws_acm_certificate.main.arn
 
       forward = {
         target_group_key = "storefront"

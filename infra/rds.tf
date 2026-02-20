@@ -15,7 +15,7 @@ module "rds" {
 
   # Engine configuration
   engine               = "postgres"
-  engine_version       = "16.1"
+  engine_version       = "16.6"
   family               = "postgres16"
   major_engine_version = "16"
   instance_class       = var.db_instance_class

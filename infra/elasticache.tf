@@ -36,8 +36,9 @@ module "redis" {
 
 # Generate random password for Redis auth token
 resource "random_password" "redis_auth_token" {
-  length  = 32
-  special = true
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
 # Store Redis auth token in Secrets Manager

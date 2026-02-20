@@ -119,6 +119,11 @@ output "route53_zone_id" {
   value       = aws_route53_zone.main.zone_id
 }
 
+output "route53_nameservers" {
+  description = "Route53 nameservers - point your domain registrar to these after first apply"
+  value       = aws_route53_zone.main.name_servers
+}
+
 # DNS Records
 output "domain_urls" {
   description = "Application URLs"

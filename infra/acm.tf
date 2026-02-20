@@ -36,11 +36,13 @@ resource "aws_route53_record" "cert_validation" {
   zone_id         = aws_route53_zone.main.zone_id
 }
 
-# Validate the certificate
+# Certificate validation waits for DNS propagation after nameservers are configured.
+# Run a second `terraform apply` after pointing your domain registrar NS records
+# to the Route53 nameservers output by `terraform output route53_nameservers`.
 resource "aws_acm_certificate_validation" "main" {
-  certificate_arn = aws_acm_certificate.main.arn
+  certificate_arn         = aws_acm_certificate.main.arn
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
   timeouts {
-    create = "5m"
+    create = "45m"
   }
-  depends_on = [aws_route53_record.cert_validation]
 }
