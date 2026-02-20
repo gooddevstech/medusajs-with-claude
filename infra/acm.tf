@@ -11,9 +11,11 @@ resource "aws_acm_certificate" "main" {
   tags = merge(var.tags, { Name = "${var.project_name}-cert" })
 }
 
-# Route53 hosted zone (assuming it exists, reference it)
-data "aws_route53_zone" "main" {
+# Route53 hosted zone - create if it doesn't exist
+resource "aws_route53_zone" "main" {
   name = var.domain_name
+
+  tags = merge(var.tags, { Name = "${var.project_name}-zone" })
 }
 
 # DNS validation records for ACM certificate
@@ -31,7 +33,7 @@ resource "aws_route53_record" "cert_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = data.aws_route53_zone.main.zone_id
+  zone_id         = aws_route53_zone.main.zone_id
 }
 
 # Validate the certificate

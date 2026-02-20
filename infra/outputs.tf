@@ -116,7 +116,7 @@ output "cloudfront_distribution_id" {
 # Route53 Outputs
 output "route53_zone_id" {
   description = "Route53 hosted zone ID"
-  value       = data.aws_route53_zone.main.zone_id
+  value       = aws_route53_zone.main.zone_id
 }
 
 # DNS Records
