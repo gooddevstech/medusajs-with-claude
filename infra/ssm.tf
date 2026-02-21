@@ -42,7 +42,7 @@ resource "aws_ssm_parameter" "cookie_secret" {
 resource "aws_ssm_parameter" "medusa_publishable_key" {
   name  = "/${var.project_name}/medusa_publishable_key"
   type  = "SecureString"
-  value = var.medusa_publishable_key
+  value = var.medusa_publishable_key != "" ? var.medusa_publishable_key : "placeholder"
 
   tags = var.tags
 }

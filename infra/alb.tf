@@ -33,6 +33,21 @@ module "alb" {
       forward = {
         target_group_key = "storefront"
       }
+
+      rules = {
+        backend_api = {
+          priority = 10
+          actions = [{
+            type             = "forward"
+            target_group_key = "backend"
+          }]
+          conditions = [{
+            path_pattern = {
+              values = ["/api/*"]
+            }
+          }]
+        }
+      }
     }
   }
 
