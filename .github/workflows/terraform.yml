@@ -2,12 +2,6 @@ name: Terraform Infrastructure
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'infra/**'
-      - '.github/workflows/terraform.yml'
 
 concurrency:
   group: terraform
@@ -78,7 +72,7 @@ jobs:
             });
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: steps.plan.outcome == 'success'
         env:
           TF_VAR_db_username: ${{ secrets.TF_VAR_DB_USERNAME }}
           TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
@@ -90,7 +84,7 @@ jobs:
 
       - name: Get Terraform Outputs
         id: outputs
-        if: always() && github.ref == 'refs/heads/main'
+        if: always()
         run: |
           echo "=== Route53 Nameservers. Update your domain registrar here ==="
           terraform output -json route53_nameservers 2>/dev/null || true

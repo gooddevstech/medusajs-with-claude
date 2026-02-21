@@ -43,7 +43,7 @@ jobs:
         id: image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: tindahang-backend
+          ECR_REPOSITORY: tindaph-backend
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
@@ -56,7 +56,7 @@ jobs:
       - name: Download ECS task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition tindahang-backend \
+            --task-definition tindaph-backend \
             --query taskDefinition > task-definition.json
 
       - name: Update ECS task definition with new image
@@ -77,8 +77,8 @@ jobs:
           
           # Run migration task
           TASK_ARN=$(aws ecs run-task \
-            --cluster tindahang-ecs \
-            --task-definition tindahang-backend \
+            --cluster tindaph-ecs \
+            --task-definition tindaph-backend \
             --launch-type FARGATE \
             --network-configuration "awsvpcConfiguration={subnets=[$SUBNET],securityGroups=[$SG],assignPublicIp=ENABLED}" \
             --overrides "containerOverrides=[{name=backend,command=[\"yarn\",\"medusa\",\"db:migrate\"]}]" \
@@ -88,11 +88,11 @@ jobs:
           echo "Migration task: $TASK_ARN"
           
           # Wait and check status
-          aws ecs wait tasks-running --cluster tindahang-ecs --tasks $TASK_ARN || true
+          aws ecs wait tasks-running --cluster tindaph-ecs --tasks $TASK_ARN || true
           sleep 15
           
           TASK_STATUS=$(aws ecs describe-tasks \
-            --cluster tindahang-ecs \
+            --cluster tindaph-ecs \
             --tasks $TASK_ARN \
             --query 'tasks[0].lastStatus' \
             --output text)
@@ -102,28 +102,28 @@ jobs:
       - name: Deploy to ECS service
         run: |
           aws ecs update-service \
-            --cluster tindahang-ecs \
-            --service tindahang-backend \
-            --task-definition tindahang-backend \
+            --cluster tindaph-ecs \
+            --service tindaph-backend \
+            --task-definition tindaph-backend \
             --force-new-deployment
 
       - name: Wait for service to stabilize
         run: |
           aws ecs wait services-stable \
-            --cluster tindahang-ecs \
-            --services tindahang-backend
+            --cluster tindaph-ecs \
+            --services tindaph-backend
 
       - name: Verify service health
         run: |
           RUNNING_COUNT=$(aws ecs describe-services \
-            --cluster tindahang-ecs \
-            --services tindahang-backend \
+            --cluster tindaph-ecs \
+            --services tindaph-backend \
             --query 'services[0].runningCount' \
             --output text)
           
           DESIRED_COUNT=$(aws ecs describe-services \
-            --cluster tindahang-ecs \
-            --services tindahang-backend \
+            --cluster tindaph-ecs \
+            --services tindaph-backend \
             --query 'services[0].desiredCount' \
             --output text)
           
@@ -137,5 +137,5 @@ jobs:
         run: |
           echo "✅ Backend deployment completed successfully"
           echo "Image: ${{ steps.image.outputs.image }}"
-          echo "Service: tindahang-backend"
-          echo "Cluster: tindahang-ecs"
+          echo "Service: tindaph-backend"
+          echo "Cluster: tindaph-ecs"

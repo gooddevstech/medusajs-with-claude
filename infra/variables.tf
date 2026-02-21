@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "project_name" {
   description = "Project name for resource naming"
   type        = string
-  default     = "tindahang"
+  default     = "tindaph"
 }
 
 variable "environment" {
@@ -173,7 +173,7 @@ variable "tags" {
   description = "Common tags to apply to all resources"
   type        = map(string)
   default = {
-    Project     = "tindahang"
+    Project     = "tindaph"
     Environment = "production"
     ManagedBy   = "Terraform"
   }

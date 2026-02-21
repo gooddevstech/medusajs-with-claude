@@ -14,7 +14,7 @@ terraform {
 
   backend "s3" {
     bucket         = "gooddevs-devops-base-infra-terraform"
-    key            = "tindahang/production/terraform.tfstate"
+    key            = "tindaph/production/terraform.tfstate"
     region         = "ap-southeast-1"
     encrypt        = true
     dynamodb_table = "gooddevs-devops-base-infra-terraform-lock"

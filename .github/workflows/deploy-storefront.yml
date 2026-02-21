@@ -38,7 +38,7 @@ jobs:
         id: image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: tindahang-storefront
+          ECR_REPOSITORY: tindaph-storefront
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
@@ -52,7 +52,7 @@ jobs:
       - name: Download ECS task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition tindahang-storefront \
+            --task-definition tindaph-storefront \
             --query taskDefinition > task-definition.json
 
       - name: Update ECS task definition with new image
@@ -66,28 +66,28 @@ jobs:
       - name: Deploy to ECS service
         run: |
           aws ecs update-service \
-            --cluster tindahang-ecs \
-            --service tindahang-storefront \
-            --task-definition tindahang-storefront \
+            --cluster tindaph-ecs \
+            --service tindaph-storefront \
+            --task-definition tindaph-storefront \
             --force-new-deployment
 
       - name: Wait for service to stabilize
         run: |
           aws ecs wait services-stable \
-            --cluster tindahang-ecs \
-            --services tindahang-storefront
+            --cluster tindaph-ecs \
+            --services tindaph-storefront
 
       - name: Verify service health
         run: |
           RUNNING_COUNT=$(aws ecs describe-services \
-            --cluster tindahang-ecs \
-            --services tindahang-storefront \
+            --cluster tindaph-ecs \
+            --services tindaph-storefront \
             --query 'services[0].runningCount' \
             --output text)
           
           DESIRED_COUNT=$(aws ecs describe-services \
-            --cluster tindahang-ecs \
-            --services tindahang-storefront \
+            --cluster tindaph-ecs \
+            --services tindaph-storefront \
             --query 'services[0].desiredCount' \
             --output text)
           
@@ -101,5 +101,5 @@ jobs:
         run: |
           echo "✅ Storefront deployment completed successfully"
           echo "Image: ${{ steps.image.outputs.image }}"
-          echo "Service: tindahang-storefront"
-          echo "Cluster: tindahang-ecs"
+          echo "Service: tindaph-storefront"
+          echo "Cluster: tindaph-ecs"
