@@ -12,7 +12,7 @@ module "cloudfront" {
     s3_bucket = {
       domain_name = module.s3_media.s3_bucket_bucket_regional_domain_name
       s3_origin_config = {
-        origin_access_identity = aws_cloudfront_origin_access_identity.s3_oai.etag
+        cloudfront_access_identity_path = aws_cloudfront_origin_access_identity.s3_oai.cloudfront_access_identity_path
       }
     }
   }
