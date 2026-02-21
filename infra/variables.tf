@@ -77,7 +77,7 @@ variable "redis_node_type" {
 variable "redis_num_cache_clusters" {
   description = "Number of cache clusters for Redis replication group"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 # ECS Configuration
