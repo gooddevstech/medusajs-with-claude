@@ -26,10 +26,11 @@ module "rds" {
   storage_type      = "gp3"
 
   # Database configuration
-  db_name  = var.db_name
-  username = var.db_username
-  password = var.db_password
-  port     = 5432
+  db_name                     = var.db_name
+  username                    = var.db_username
+  password                    = var.db_password
+  manage_master_user_password = false
+  port                        = 5432
 
   # Network configuration
   publicly_accessible    = false
