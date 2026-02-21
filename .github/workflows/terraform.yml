@@ -52,6 +52,10 @@ jobs:
         env:
           TF_VAR_db_username: ${{ secrets.TF_VAR_DB_USERNAME }}
           TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
+          TF_VAR_jwt_secret: ${{ secrets.MEDUSA_JWT_SECRET }}
+          TF_VAR_cookie_secret: ${{ secrets.COOKIE_SECRET }}
+          TF_VAR_medusa_publishable_key: ${{ secrets.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY }}
+          TF_VAR_revalidate_secret: ${{ secrets.REVALIDATE_SECRET }}
         run: |
           terraform plan -out=tfplan -input=false
           terraform show -json tfplan > tfplan.json
@@ -78,6 +82,10 @@ jobs:
         env:
           TF_VAR_db_username: ${{ secrets.TF_VAR_DB_USERNAME }}
           TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
+          TF_VAR_jwt_secret: ${{ secrets.MEDUSA_JWT_SECRET }}
+          TF_VAR_cookie_secret: ${{ secrets.COOKIE_SECRET }}
+          TF_VAR_medusa_publishable_key: ${{ secrets.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY }}
+          TF_VAR_revalidate_secret: ${{ secrets.REVALIDATE_SECRET }}
         run: terraform apply -auto-approve tfplan
 
       - name: Get Terraform Outputs
@@ -87,65 +95,8 @@ jobs:
           terraform output -raw alb_dns_name 2>/dev/null && echo "ALB_DNS=$(terraform output -raw alb_dns_name)" >> $GITHUB_OUTPUT || true
           terraform output -raw backend_repository_url 2>/dev/null && echo "BACKEND_ECR=$(terraform output -raw backend_repository_url)" >> $GITHUB_OUTPUT || true
           terraform output -raw storefront_repository_url 2>/dev/null && echo "STOREFRONT_ECR=$(terraform output -raw storefront_repository_url)" >> $GITHUB_OUTPUT || true
-          terraform output -raw rds_endpoint 2>/dev/null && echo "RDS_ENDPOINT=$(terraform output -raw rds_endpoint)" >> $GITHUB_OUTPUT || true
-          terraform output -raw redis_endpoint 2>/dev/null && echo "REDIS_ENDPOINT=$(terraform output -raw redis_endpoint)" >> $GITHUB_OUTPUT || true
           echo "=== Route53 Nameservers (point your domain registrar here) ==="
           terraform output -json route53_nameservers 2>/dev/null || true
-
-      - name: Create/Update SSM Parameters
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.outputs.outputs.RDS_ENDPOINT != ''
-        run: |
-          # Database URL
-          DATABASE_URL="postgresql://${{ secrets.TF_VAR_DB_USERNAME }}:${{ secrets.TF_VAR_DB_PASSWORD }}@${{ steps.outputs.outputs.RDS_ENDPOINT }}:5432/medusa"
-          aws ssm put-parameter \
-            --name /tindahang/database_url \
-            --value "$DATABASE_URL" \
-            --type SecureString \
-            --overwrite \
-            --region ${{ secrets.AWS_REGION }}
-          
-          # Redis URL - auth token is managed by Terraform/Secrets Manager
-          REDIS_URL="rediss://${{ steps.outputs.outputs.REDIS_ENDPOINT }}:6379"
-          aws ssm put-parameter \
-            --name /tindahang/redis_url \
-            --value "$REDIS_URL" \
-            --type SecureString \
-            --overwrite \
-            --region ${{ secrets.AWS_REGION }}
-          
-          # JWT Secret
-          aws ssm put-parameter \
-            --name /tindahang/jwt_secret \
-            --value "${{ secrets.MEDUSA_JWT_SECRET }}" \
-            --type SecureString \
-            --overwrite \
-            --region ${{ secrets.AWS_REGION }}
-          
-          # Cookie Secret
-          aws ssm put-parameter \
-            --name /tindahang/cookie_secret \
-            --value "${{ secrets.COOKIE_SECRET }}" \
-            --type SecureString \
-            --overwrite \
-            --region ${{ secrets.AWS_REGION }}
-          
-          # Medusa Publishable Key
-          aws ssm put-parameter \
-            --name /tindahang/medusa_publishable_key \
-            --value "${{ secrets.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY }}" \
-            --type SecureString \
-            --overwrite \
-            --region ${{ secrets.AWS_REGION }}
-          
-          # Revalidate Secret
-          aws ssm put-parameter \
-            --name /tindahang/revalidate_secret \
-            --value "${{ secrets.REVALIDATE_SECRET }}" \
-            --type SecureString \
-            --overwrite \
-            --region ${{ secrets.AWS_REGION }}
-          
-          echo "✅ SSM Parameters created/updated successfully"
 
       - name: Create Action Artifacts
         if: always()

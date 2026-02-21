@@ -142,6 +142,32 @@ variable "create_certificate" {
   default     = true
 }
 
+# Application Secrets (stored in SSM Parameter Store)
+variable "jwt_secret" {
+  description = "JWT secret for Medusa backend"
+  type        = string
+  sensitive   = true
+}
+
+variable "cookie_secret" {
+  description = "Cookie secret for Medusa backend"
+  type        = string
+  sensitive   = true
+}
+
+variable "medusa_publishable_key" {
+  description = "Medusa publishable API key for storefront (set after first Medusa deploy)"
+  type        = string
+  sensitive   = true
+  default     = "placeholder"
+}
+
+variable "revalidate_secret" {
+  description = "Next.js revalidation secret for storefront"
+  type        = string
+  sensitive   = true
+}
+
 # Tags
 variable "tags" {
   description = "Common tags to apply to all resources"
