@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50"
+  },
   "permissions": {
     "allow": [
       "Bash(chmod:*)",
@@ -33,7 +36,30 @@
       "Bash(git submodule:*)",
       "Bash(git rm:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:aws.amazon.com)",
+      "WebFetch(domain:instances.vantage.sh)",
+      "Bash(head:*)",
+      "Bash(xxd:*)",
+      "Bash(python3:*)",
+      "Bash(npx --yes yaml-lint:*)",
+      "Bash(ruby -e:*)",
+      "Bash(npx yaml-lint:*)",
+      "Bash(terraform fmt:*)",
+      "Bash(git mv:*)",
+      "Bash(terraform init:*)",
+      "Bash(terraform validate:*)",
+      "WebFetch(domain:registry.terraform.io)",
+      "Bash(terraform providers schema:*)",
+      "WebFetch(domain:docs.payrex.com)",
+      "WebFetch(domain:www.payrex.com)",
+      "WebFetch(domain:docs.payrexhq.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(cat:*)",
+      "mcp__plugin_medusa-dev_MedusaDocs__ask_medusa_question",
+      "Bash(find:*)",
+      "Bash(yarn build:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }
