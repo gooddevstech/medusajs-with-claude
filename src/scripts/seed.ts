@@ -63,7 +63,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const salesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
   const storeModuleService = container.resolve(Modules.STORE);
 
-  const countries = ["ph", "us", "gb", "de", "dk", "se", "fr", "es", "it"];
+  const countries = ["ph"];
 
   logger.info("Seeding store data...");
   const [store] = await storeModuleService.listStores();
@@ -92,14 +92,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
       store_id: store.id,
       supported_currencies: [
         {
-          currency_code: "usd",
-          is_default: true,
-        },
-        {
-          currency_code: "eur",
-        },
-        {
           currency_code: "php",
+          is_default: true,
         },
       ],
     },
@@ -114,21 +108,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
     },
   });
   logger.info("Seeding region data...");
-  const { result: regionResult } = await createRegionsWorkflow(container).run({
+  await createRegionsWorkflow(container).run({
     input: {
       regions: [
-        {
-          name: "North America",
-          currency_code: "usd",
-          countries: ["us"],
-          payment_providers: ["pp_system_default"],
-        },
-        {
-          name: "Europe",
-          currency_code: "eur",
-          countries: ["gb", "de", "dk", "se", "fr", "es", "it"],
-          payment_providers: ["pp_system_default"],
-        },
         {
           name: "Philippines",
           currency_code: "php",
@@ -138,7 +120,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
       ],
     },
   });
-  const usRegion = regionResult[0];
   logger.info("Finished seeding regions.");
 
   logger.info("Seeding tax regions...");
@@ -213,48 +194,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
     type: "shipping",
     service_zones: [
       {
-        name: "North America",
-        geo_zones: [
-          {
-            country_code: "us",
-            type: "country",
-          },
-        ],
-      },
-      {
-        name: "Europe",
-        geo_zones: [
-          {
-            country_code: "gb",
-            type: "country",
-          },
-          {
-            country_code: "de",
-            type: "country",
-          },
-          {
-            country_code: "dk",
-            type: "country",
-          },
-          {
-            country_code: "se",
-            type: "country",
-          },
-          {
-            country_code: "fr",
-            type: "country",
-          },
-          {
-            country_code: "es",
-            type: "country",
-          },
-          {
-            country_code: "it",
-            type: "country",
-          },
-        ],
-      },
-      {
         name: "Philippines",
         geo_zones: [
           {
@@ -275,9 +214,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     },
   });
 
-  const naZoneId = fulfillmentSet.service_zones[0].id;
-  const euZoneId = fulfillmentSet.service_zones[1].id;
-  const phZoneId = fulfillmentSet.service_zones[2].id;
+  const phZoneId = fulfillmentSet.service_zones[0].id;
 
   const shippingRules = [
     {
@@ -294,92 +231,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   await createShippingOptionsWorkflow(container).run({
     input: [
-      // North America
-      {
-        name: "Standard Delivery",
-        price_type: "flat",
-        provider_id: "manual_manual",
-        service_zone_id: naZoneId,
-        shipping_profile_id: shippingProfile.id,
-        type: {
-          label: "Standard",
-          description: "Delivery in 2-3 business days.",
-          code: "standard",
-        },
-        prices: [
-          {
-            currency_code: "usd",
-            amount: 999, // $9.99
-          },
-          {
-            region_id: usRegion.id,
-            amount: 999,
-          },
-        ],
-        rules: shippingRules,
-      },
-      {
-        name: "Same-Day Delivery",
-        price_type: "flat",
-        provider_id: "manual_manual",
-        service_zone_id: naZoneId,
-        shipping_profile_id: shippingProfile.id,
-        type: {
-          label: "Express",
-          description: "Same-day delivery for orders before 2 PM.",
-          code: "express",
-        },
-        prices: [
-          {
-            currency_code: "usd",
-            amount: 1999, // $19.99
-          },
-          {
-            region_id: usRegion.id,
-            amount: 1999,
-          },
-        ],
-        rules: shippingRules,
-      },
-      // Europe
-      {
-        name: "Standard Delivery",
-        price_type: "flat",
-        provider_id: "manual_manual",
-        service_zone_id: euZoneId,
-        shipping_profile_id: shippingProfile.id,
-        type: {
-          label: "Standard",
-          description: "Delivery in 3-5 business days.",
-          code: "standard",
-        },
-        prices: [
-          {
-            currency_code: "eur",
-            amount: 999, // €9.99
-          },
-        ],
-        rules: shippingRules,
-      },
-      {
-        name: "Express Delivery",
-        price_type: "flat",
-        provider_id: "manual_manual",
-        service_zone_id: euZoneId,
-        shipping_profile_id: shippingProfile.id,
-        type: {
-          label: "Express",
-          description: "Delivery in 1-2 business days.",
-          code: "express",
-        },
-        prices: [
-          {
-            currency_code: "eur",
-            amount: 1999, // €19.99
-          },
-        ],
-        rules: shippingRules,
-      },
       // Philippines
       {
         name: "Standard Delivery",
@@ -546,14 +397,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 2499, // $24.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 2299,
-                  currency_code: "eur",
-                },
-                {
                   amount: 20000, // PHP 200.00
                   currency_code: "php",
                 },
@@ -567,14 +410,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 Quantity: "20 stems",
               },
               prices: [
-                {
-                  amount: 4499, // $44.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 4199,
-                  currency_code: "eur",
-                },
                 {
                   amount: 50000, // PHP 500.00
                   currency_code: "php",
@@ -590,14 +425,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 2499,
-                  currency_code: "usd",
-                },
-                {
-                  amount: 2299,
-                  currency_code: "eur",
-                },
-                {
                   amount: 20000,
                   currency_code: "php",
                 },
@@ -611,14 +438,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 Quantity: "10 stems",
               },
               prices: [
-                {
-                  amount: 2499,
-                  currency_code: "usd",
-                },
-                {
-                  amount: 2299,
-                  currency_code: "eur",
-                },
                 {
                   amount: 20000,
                   currency_code: "php",
@@ -634,14 +453,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 2499,
-                  currency_code: "usd",
-                },
-                {
-                  amount: 2299,
-                  currency_code: "eur",
-                },
-                {
                   amount: 20000,
                   currency_code: "php",
                 },
@@ -655,14 +466,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 Quantity: "10 stems",
               },
               prices: [
-                {
-                  amount: 2699, // $26.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 2499,
-                  currency_code: "eur",
-                },
                 {
                   amount: 20000,
                   currency_code: "php",
@@ -712,14 +515,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 4999, // $49.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 4599,
-                  currency_code: "eur",
-                },
-                {
                   amount: 20000, // PHP 200.00
                   currency_code: "php",
                 },
@@ -733,14 +528,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 Quantity: "24 stems",
               },
               prices: [
-                {
-                  amount: 8999, // $89.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 8299,
-                  currency_code: "eur",
-                },
                 {
                   amount: 50000, // PHP 500.00
                   currency_code: "php",
@@ -756,14 +543,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 4999,
-                  currency_code: "usd",
-                },
-                {
-                  amount: 4599,
-                  currency_code: "eur",
-                },
-                {
                   amount: 20000,
                   currency_code: "php",
                 },
@@ -778,14 +557,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 4999,
-                  currency_code: "usd",
-                },
-                {
-                  amount: 4599,
-                  currency_code: "eur",
-                },
-                {
                   amount: 20000,
                   currency_code: "php",
                 },
@@ -799,14 +570,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 Quantity: "12 stems",
               },
               prices: [
-                {
-                  amount: 4999,
-                  currency_code: "usd",
-                },
-                {
-                  amount: 4599,
-                  currency_code: "eur",
-                },
                 {
                   amount: 20000,
                   currency_code: "php",
@@ -851,14 +614,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 1999, // $19.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 1899,
-                  currency_code: "eur",
-                },
-                {
                   amount: 20000, // PHP 200.00
                   currency_code: "php",
                 },
@@ -871,14 +626,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 Quantity: "30 stems",
               },
               prices: [
-                {
-                  amount: 3499, // $34.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 3199,
-                  currency_code: "eur",
-                },
                 {
                   amount: 35000, // PHP 350.00
                   currency_code: "php",
@@ -928,14 +675,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 1299, // $12.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 1199,
-                  currency_code: "eur",
-                },
-                {
                   amount: 10000, // PHP 100.00
                   currency_code: "php",
                 },
@@ -949,14 +688,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 Size: "Medium",
               },
               prices: [
-                {
-                  amount: 999, // $9.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 899,
-                  currency_code: "eur",
-                },
                 {
                   amount: 10000,
                   currency_code: "php",
@@ -972,14 +703,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 999,
-                  currency_code: "usd",
-                },
-                {
-                  amount: 899,
-                  currency_code: "eur",
-                },
-                {
                   amount: 10000,
                   currency_code: "php",
                 },
@@ -994,14 +717,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 999,
-                  currency_code: "usd",
-                },
-                {
-                  amount: 899,
-                  currency_code: "eur",
-                },
-                {
                   amount: 10000,
                   currency_code: "php",
                 },
@@ -1015,14 +730,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 Size: "Large",
               },
               prices: [
-                {
-                  amount: 1599, // $15.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 1499,
-                  currency_code: "eur",
-                },
                 {
                   amount: 15000, // PHP 150.00
                   currency_code: "php",
@@ -1067,14 +774,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 3999, // $39.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 3699,
-                  currency_code: "eur",
-                },
-                {
                   amount: 30000, // PHP 300.00
                   currency_code: "php",
                 },
@@ -1088,14 +787,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
               },
               prices: [
                 {
-                  amount: 5999, // $59.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 5499,
-                  currency_code: "eur",
-                },
-                {
                   amount: 50000, // PHP 500.00
                   currency_code: "php",
                 },
@@ -1108,14 +799,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
                 Size: "Premium",
               },
               prices: [
-                {
-                  amount: 7999, // $79.99
-                  currency_code: "usd",
-                },
-                {
-                  amount: 7399,
-                  currency_code: "eur",
-                },
                 {
                   amount: 70000, // PHP 700.00
                   currency_code: "php",
