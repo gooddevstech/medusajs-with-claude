@@ -39,7 +39,7 @@ module "rds" {
   skip_final_snapshot    = false
 
   # Backup and maintenance
-  backup_retention_period = 7
+  backup_retention_period = 1
   backup_window           = "03:00-04:00"
   maintenance_window      = "sun:04:00-sun:05:00"
   copy_tags_to_snapshot   = true
@@ -47,7 +47,7 @@ module "rds" {
   # Monitoring
   enabled_cloudwatch_logs_exports        = ["postgresql"]
   create_cloudwatch_log_group            = true
-  cloudwatch_log_group_retention_in_days = 7
+  cloudwatch_log_group_retention_in_days = 1
 
   # Enhanced monitoring
   monitoring_interval                 = 60
