@@ -3,14 +3,69 @@
 ## Project Overview
 Tindahang is a production-ready e-commerce platform ("The Bloom Shop" - online flower store) built on MedusaJS v2 with a Next.js storefront, deployed to AWS via Terraform.
 
-## Tech Stack
-- **Backend:** MedusaJS v2.13.1, Node.js 20, TypeScript
-- **Frontend:** Next.js 15, React 19, Tailwind CSS 3, Medusa JS SDK
-- **Database:** PostgreSQL 16
-- **Cache/Events:** Redis 7 (event bus + cache)
-- **Infra:** AWS (ECS Fargate, RDS, ElastiCache, ALB, CloudFront, Route53) via Terraform
-- **CI/CD:** GitHub Actions, Docker multi-stage builds
-- **Domain:** tindaph.app (ap-southeast-1)
+## Technical Architecture
+
+### Architecture
+```
+Route53 (tindaph.app) → ALB (HTTPS/ACM)
+  ├── /api/* → Backend ECS (port 9000)
+  └── /* → Storefront ECS (port 8000)
+Backend → RDS PostgreSQL 16 + ElastiCache Redis 7
+Media → S3 → CloudFront CDN
+```
+
+### Services Overview
+
+```
+┌─────────────────────────────────────────────────┐
+│           MedusaJS Docker Environment           │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  ┌─────────────┐      ┌──────────────┐        │
+│  │ PostgreSQL  │◄─────┤   Backend    │        │
+│  │  (16-alpine)│      │  (Node 20)   │        │
+│  └─────────────┘      └──────┬───────┘        │
+│                              │                  │
+│  ┌─────────────┐             │                 │
+│  │    Redis    │◄────────────┤                 │
+│  │  (7-alpine) │             │                 │
+│  └─────────────┘             │                 │
+│                              │                  │
+│                       ┌──────▼────────┐        │
+│                       │ Admin Dashboard│        │
+│                       │   (Vite HMR)  │        │
+│                       └───────────────┘        │
+│                              │                  │
+│                       ┌──────▼────────┐        │
+│                       │  Storefront   │        │
+│                       │  (Next.js 15) │        │
+│                       └───────────────┘        │
+└─────────────────────────────────────────────────┘
+```
+
+### Technology Stack
+
+| Component | Technology | Version | Purpose |
+|-----------|-----------|---------|---------|
+| Backend Framework | MedusaJS | 2.13.1 | E-commerce API & business logic |
+| Database | PostgreSQL | 16-alpine | Primary data store |
+| Cache & Events | Redis | 7-alpine | Caching & event bus |
+| Admin UI | Vite | 5.4.14 | Admin dashboard with HMR |
+| Storefront | Next.js | 15.3.9 | Customer-facing store |
+| Container Runtime | Docker | - | Containerization |
+| Orchestration | Docker Compose | - | Multi-container management |
+| Package Manager | Yarn | 4.12.0 | Dependency management |
+| Base Image | Node.js | 20-alpine | Runtime environment |
+
+### Port Mapping
+
+| Service | Internal Port | External Port | Purpose |
+|---------|--------------|---------------|---------|
+| Backend API | 9000 | 9000 | REST API endpoints |
+| Admin Dashboard | 5173 | 5173 | Vite dev server (HMR) |
+| Storefront | 8000 | 8000 | Next.js storefront |
+| PostgreSQL | 5432 | 5432 | Database access |
+| Redis | 6379 | 6379 | Cache/event bus |
 
 ## Project Structure
 ```
@@ -53,15 +108,6 @@ terraform init                   # Initialize providers
 terraform validate               # Validate configuration
 terraform plan                   # Preview changes
 terraform apply                  # Apply changes
-```
-
-## Architecture
-```
-Route53 (tindaph.app) → ALB (HTTPS/ACM)
-  ├── /api/* → Backend ECS (port 9000)
-  └── /* → Storefront ECS (port 8000)
-Backend → RDS PostgreSQL 16 + ElastiCache Redis 7
-Media → S3 → CloudFront CDN
 ```
 
 ## Environment Variables
