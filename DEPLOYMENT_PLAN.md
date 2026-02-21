@@ -158,7 +158,7 @@ module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
 
-  name = "tindahang-vpc"
+  name = "tindaph-vpc"
   cidr = "10.0.0.0/16"
 
   azs             = data.aws_availability_zones.available.names
@@ -171,7 +171,7 @@ module "vpc" {
 
   tags = {
     Environment = "production"
-    Project     = "tindahang"
+    Project     = "tindaph"
   }
 }
 ```
@@ -182,7 +182,7 @@ module "alb" {
   source = "terraform-aws-modules/alb/aws"
   version = "~> 9.0"
 
-  name            = "tindahang-alb"
+  name            = "tindaph-alb"
   load_balancer_type = "application"
   vpc_id          = module.vpc.vpc_id
   subnets         = module.vpc.public_subnets
@@ -246,7 +246,7 @@ module "alb" {
 
   tags = {
     Environment = "production"
-    Project     = "tindahang"
+    Project     = "tindaph"
   }
 }
 ```
@@ -257,7 +257,7 @@ module "ecs" {
   source = "terraform-aws-modules/ecs/aws"
   version = "~> 5.0"
 
-  name = "tindahang-ecs"
+  name = "tindaph-ecs"
 
   cluster_configuration = {
     execute_command_configuration = {
@@ -314,7 +314,7 @@ module "ecs" {
 
   tags = {
     Environment = "production"
-    Project     = "tindahang"
+    Project     = "tindaph"
   }
 }
 ```
@@ -325,7 +325,7 @@ module "rds" {
   source = "terraform-aws-modules/rds/aws"
   version = "~> 6.0"
 
-  identifier = "tindahang-postgres"
+  identifier = "tindaph-postgres"
 
   engine               = "postgres"
   engine_version       = "16"
@@ -353,11 +353,11 @@ module "rds" {
   create_cloudwatch_log_group     = true
 
   skip_final_snapshot = false
-  final_snapshot_identifier = "tindahang-postgres-final-snapshot"
+  final_snapshot_identifier = "tindaph-postgres-final-snapshot"
 
   tags = {
     Environment = "production"
-    Project     = "tindahang"
+    Project     = "tindaph"
   }
 }
 ```
@@ -368,7 +368,7 @@ module "s3_media" {
   source = "terraform-aws-modules/s3-bucket/aws"
   version = "~> 4.0"
 
-  bucket = "tindahang-media-${data.aws_caller_identity.current.account_id}"
+  bucket = "tindaph-media-${data.aws_caller_identity.current.account_id}"
 
   versioning = {
     enabled = true
@@ -400,7 +400,7 @@ module "s3_media" {
 
   tags = {
     Environment = "production"
-    Project     = "tindahang"
+    Project     = "tindaph"
   }
 }
 ```
@@ -448,7 +448,7 @@ module "cloudfront" {
 
   tags = {
     Environment = "production"
-    Project     = "tindahang"
+    Project     = "tindaph"
   }
 }
 ```

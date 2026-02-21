@@ -3,7 +3,7 @@ aws_region  = "ap-southeast-1"
 aws_account_id = "905418233489"
 
 # Project Configuration
-project_name = "tindahang"
+project_name = "tindaph"
 environment  = "production"
 
 # VPC Configuration
@@ -39,7 +39,7 @@ create_certificate = true
 
 # Tags
 tags = {
-  Project     = "tindahang"
+  Project     = "tindaph"
   Environment = "production"
   ManagedBy   = "Terraform"
 }

@@ -1,4 +1,4 @@
-# Tindahang AI - The Bloom Shop
+# Tindaph AI - The Bloom Shop
 
 An e-commerce platform for an online flower shop, built on [MedusaJS v2](https://medusajs.com) with a [Next.js 15](https://nextjs.org) storefront, deployed to AWS.
 

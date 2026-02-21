@@ -1,7 +1,7 @@
-# Tindahang AI - E-Commerce Platform
+# Tindaph AI - E-Commerce Platform
 
 ## Project Overview
-Tindahang is a production-ready e-commerce platform ("The Bloom Shop" - online flower store) built on MedusaJS v2 with a Next.js storefront, deployed to AWS via Terraform.
+Tindaph is a production-ready e-commerce platform ("The Bloom Shop" - online flower store) built on MedusaJS v2 with a Next.js storefront, deployed to AWS via Terraform.
 
 ## Technical Architecture
 

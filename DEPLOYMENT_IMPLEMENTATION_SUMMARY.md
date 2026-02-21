@@ -1,6 +1,6 @@
 # Deployment Implementation Summary
 
-This document summarizes the complete deployment infrastructure implementation for the Tindahang e-commerce platform.
+This document summarizes the complete deployment infrastructure implementation for the Tindaph e-commerce platform.
 
 ## Overview
 

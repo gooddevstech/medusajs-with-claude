@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide provides step-by-step instructions for deploying the Tindahang e-commerce platform to AWS using Terraform infrastructure-as-code and GitHub Actions CI/CD.
+This guide provides step-by-step instructions for deploying the Tindaph e-commerce platform to AWS using Terraform infrastructure-as-code and GitHub Actions CI/CD.
 
 ## Prerequisites
 
@@ -18,14 +18,14 @@ This guide provides step-by-step instructions for deploying the Tindahang e-comm
 
 ```bash
 # Create CI/CD IAM user
-aws iam create-user --user-name tindahang-cicd
+aws iam create-user --user-name tindaph-cicd
 
 # Create access key
-aws iam create-access-key --user-name tindahang-cicd > cicd-credentials.json
+aws iam create-access-key --user-name tindaph-cicd > cicd-credentials.json
 
 # Attach necessary policies (or create custom policy with required permissions)
 aws iam attach-user-policy \
-  --user-name tindahang-cicd \
+  --user-name tindaph-cicd \
   --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
 ```
 
@@ -110,12 +110,12 @@ SSM Parameters are automatically created by the Terraform workflow after infrast
 
 | Parameter | Source | Purpose |
 |-----------|--------|---------|
-| `/tindahang/database_url` | Constructed from RDS endpoint + DB credentials | Backend database connection |
-| `/tindahang/redis_url` | Constructed from ElastiCache endpoint + auth token | Backend Redis cache connection |
-| `/tindahang/jwt_secret` | `MEDUSA_JWT_SECRET` GitHub Secret | JWT token signing |
-| `/tindahang/cookie_secret` | `COOKIE_SECRET` GitHub Secret | Session cookie encryption |
-| `/tindahang/medusa_publishable_key` | `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` GitHub Secret | Frontend API access |
-| `/tindahang/revalidate_secret` | `REVALIDATE_SECRET` GitHub Secret | Next.js ISR webhooks |
+| `/tindaph/database_url` | Constructed from RDS endpoint + DB credentials | Backend database connection |
+| `/tindaph/redis_url` | Constructed from ElastiCache endpoint + auth token | Backend Redis cache connection |
+| `/tindaph/jwt_secret` | `MEDUSA_JWT_SECRET` GitHub Secret | JWT token signing |
+| `/tindaph/cookie_secret` | `COOKIE_SECRET` GitHub Secret | Session cookie encryption |
+| `/tindaph/medusa_publishable_key` | `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` GitHub Secret | Frontend API access |
+| `/tindaph/revalidate_secret` | `REVALIDATE_SECRET` GitHub Secret | Next.js ISR webhooks |
 
 **No manual setup required.** Parameters are automatically created/updated when the Terraform workflow runs on the main branch.
 
@@ -174,12 +174,12 @@ terraform plan -out=tfplan
 
 ```bash
 # Backend production image
-docker build -f Dockerfile.prod -t tindahang-backend:local .
-docker run -p 9000:9000 tindahang-backend:local
+docker build -f Dockerfile.prod -t tindaph-backend:local .
+docker run -p 9000:9000 tindaph-backend:local
 
 # Storefront production image
-docker build -f storefront/Dockerfile.prod -t tindahang-storefront:local storefront/
-docker run -p 8000:8000 tindahang-storefront:local
+docker build -f storefront/Dockerfile.prod -t tindaph-storefront:local storefront/
+docker run -p 8000:8000 tindaph-storefront:local
 ```
 
 ## Monitoring & Operations
@@ -188,27 +188,27 @@ docker run -p 8000:8000 tindahang-storefront:local
 
 ```bash
 # Backend logs
-aws logs tail /ecs/tindahang-backend --follow
+aws logs tail /ecs/tindaph-backend --follow
 
 # Storefront logs
-aws logs tail /ecs/tindahang-storefront --follow
+aws logs tail /ecs/tindaph-storefront --follow
 ```
 
 ### ECS Operations
 
 ```bash
 # Describe service
-aws ecs describe-services --cluster tindahang-ecs --services tindahang-backend
+aws ecs describe-services --cluster tindaph-ecs --services tindaph-backend
 
 # View tasks
-aws ecs list-tasks --cluster tindahang-ecs --service-name tindahang-backend
+aws ecs list-tasks --cluster tindaph-ecs --service-name tindaph-backend
 
 # Get task details
-aws ecs describe-tasks --cluster tindahang-ecs --tasks <task-arn>
+aws ecs describe-tasks --cluster tindaph-ecs --tasks <task-arn>
 
 # Execute command in running task (for debugging)
 aws ecs execute-command \
-  --cluster tindahang-ecs \
+  --cluster tindaph-ecs \
   --task <task-arn> \
   --container backend \
   --interactive \
@@ -223,14 +223,14 @@ psql -h <rds-endpoint> -U medusa_user -d medusa
 
 # Run migrations (one-off task)
 aws ecs run-task \
-  --cluster tindahang-ecs \
-  --task-definition tindahang-backend \
+  --cluster tindaph-ecs \
+  --task-definition tindaph-backend \
   --overrides 'containerOverrides=[{name=backend,command=["yarn","medusa","db:migrate"]}]'
 
 # Create admin user (one-off task)
 aws ecs run-task \
-  --cluster tindahang-ecs \
-  --task-definition tindahang-backend \
+  --cluster tindaph-ecs \
+  --task-definition tindaph-backend \
   --overrides 'containerOverrides=[{name=backend,command=["yarn","medusa","user","-e","admin@tindaph.app","-p","<password>"]}]'
 ```
 
@@ -244,9 +244,9 @@ aws ecs run-task \
 
 ```bash
 aws ecs update-service \
-  --cluster tindahang-ecs \
-  --service tindahang-backend \
-  --task-definition tindahang-backend:N \
+  --cluster tindaph-ecs \
+  --service tindaph-backend \
+  --task-definition tindaph-backend:N \
   --force-new-deployment
 ```
 

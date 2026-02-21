@@ -1,6 +1,6 @@
 # Deployment Infrastructure & CI/CD Implementation
 
-This repository now includes a complete, production-ready deployment infrastructure for Tindahang e-commerce platform using **Terraform with terraform-aws-modules** and **GitHub Actions**.
+This repository now includes a complete, production-ready deployment infrastructure for Tindaph e-commerce platform using **Terraform with terraform-aws-modules** and **GitHub Actions**.
 
 ## 📋 Documentation Index
 
@@ -179,7 +179,7 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed setup instructions
 | View Terraform plan | Check GitHub Actions PR comments |
 | Rollback backend | Change ECS service task definition |
 | Scale services | Update desired count in ECS console or via AWS CLI |
-| View logs | `aws logs tail /ecs/tindahang-{backend,storefront}` |
+| View logs | `aws logs tail /ecs/tindaph-{backend,storefront}` |
 
 ## 🆘 Support
 

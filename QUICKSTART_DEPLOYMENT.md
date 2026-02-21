@@ -1,4 +1,4 @@
-# Quick Start: Deploy Tindahang to AWS
+# Quick Start: Deploy Tindaph to AWS
 
 Fast-track deployment checklist for experienced DevOps engineers.
 
@@ -75,14 +75,14 @@ gh secret set REVALIDATE_SECRET --body "$(head -c 16 /dev/urandom | base64)"
 ```bash
 # Create admin user
 aws ecs run-task \
-  --cluster tindahang-ecs \
-  --task-definition tindahang-backend \
+  --cluster tindaph-ecs \
+  --task-definition tindaph-backend \
   --overrides 'containerOverrides=[{name=backend,command=["yarn","medusa","user","-e","admin@tindaph.app","-p","STRONG_PASSWORD"]}]'
 
 # Seed products (if needed)
 aws ecs run-task \
-  --cluster tindahang-ecs \
-  --task-definition tindahang-backend \
+  --cluster tindaph-ecs \
+  --task-definition tindaph-backend \
   --overrides 'containerOverrides=[{name=backend,command=["yarn","seed"]}]'
 
 # Test endpoints
@@ -95,14 +95,14 @@ curl https://admin.tindaph.app
 
 ```bash
 # Check infrastructure
-aws ecs describe-services --cluster tindahang-ecs --services tindahang-backend tindahang-storefront
+aws ecs describe-services --cluster tindaph-ecs --services tindaph-backend tindaph-storefront
 
 # Check logs
-aws logs tail /ecs/tindahang-backend --follow
-aws logs tail /ecs/tindahang-storefront --follow
+aws logs tail /ecs/tindaph-backend --follow
+aws logs tail /ecs/tindaph-storefront --follow
 
 # Get ALB DNS
-aws elbv2 describe-load-balancers --query 'LoadBalancers[?Tags[?Key==`Name`].Value[]==`tindahang-alb`].DNSName' --output text
+aws elbv2 describe-load-balancers --query 'LoadBalancers[?Tags[?Key==`Name`].Value[]==`tindaph-alb`].DNSName' --output text
 ```
 
 ## Delete Everything (if needed)
@@ -120,10 +120,10 @@ aws s3 rm s3://gooddevs-devops-base-infra-terraform --recursive
 
 | Task | Command |
 |------|---------|
-| Restart backend | `aws ecs update-service --cluster tindahang-ecs --service tindahang-backend --force-new-deployment` |
-| Restart storefront | `aws ecs update-service --cluster tindahang-ecs --service tindahang-storefront --force-new-deployment` |
-| View backend logs | `aws logs tail /ecs/tindahang-backend --follow` |
-| Scale backend to 4 | `aws ecs update-service --cluster tindahang-ecs --service tindahang-backend --desired-count 4` |
-| SSH into task | `aws ecs execute-command --cluster tindahang-ecs --task <ARN> --container backend --interactive --command="/bin/sh"` |
+| Restart backend | `aws ecs update-service --cluster tindaph-ecs --service tindaph-backend --force-new-deployment` |
+| Restart storefront | `aws ecs update-service --cluster tindaph-ecs --service tindaph-storefront --force-new-deployment` |
+| View backend logs | `aws logs tail /ecs/tindaph-backend --follow` |
+| Scale backend to 4 | `aws ecs update-service --cluster tindaph-ecs --service tindaph-backend --desired-count 4` |
+| SSH into task | `aws ecs execute-command --cluster tindaph-ecs --task <ARN> --container backend --interactive --command="/bin/sh"` |
 
 See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed instructions.
