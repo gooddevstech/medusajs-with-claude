@@ -1,7 +1,7 @@
 ---
 name: command-runner
 description: Executes commands in the sandbox environment with proper security and handling for package managers and git.
-model: sonnet
+model: haiku
 color: yellow
 tools: Bash
 ---

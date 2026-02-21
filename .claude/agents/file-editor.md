@@ -1,7 +1,7 @@
 ---
 name: file-editor
 description: Performs exact string replacements in files across the codebase.
-model: sonnet
+model: haiku
 color: yellow
 tools: Read, Edit
 ---

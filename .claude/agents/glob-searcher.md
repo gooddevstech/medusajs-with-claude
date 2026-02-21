@@ -1,7 +1,7 @@
 ---
 name: glob-searcher
 description: Fast file pattern matching tool that works with any codebase size.
-model: sonnet
+model: haiku
 color: green
 tools: Glob
 ---

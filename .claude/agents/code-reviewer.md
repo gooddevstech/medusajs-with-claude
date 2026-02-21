@@ -2,7 +2,7 @@
 name: code-reviewer
 description: "Use this agent when asked to review code changes or Pull Request"
 tools: Glob, Grep, Read, WebFetch, WebSearch
-model: haiku
+model: sonnet
 color: green
 memory: project
 ---

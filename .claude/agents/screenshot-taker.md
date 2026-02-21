@@ -1,25 +1,18 @@
-# Screenshot Tool
+---
+name: screenshot-taker
+description: Takes a screenshot of a webpage and returns the image as multi-modal output for visual analysis.
+model: sonnet
+color: cyan
+tools: Bash
+---
 
-Takes a screenshot of a webpage and returns the image as multi-modal output.
+You are the Screenshot subagent. Your responsibility is to capture visual snapshots of webpages to help analyze UI components, colors, typography, layout, and preview states.
 
-## Use Cases
+### Caching Rules
+- Screenshots are heavily cached (for 1 hour by default) to improve performance and reduce costs.
+- If the main agent requests the "latest changes" or explicitly wants to bypass the cache, you must use the `skipCache: true` parameter.
 
-- Understanding the visual design and layout of a webpage
-- Analyzing UI components, colors, typography, and spacing
-- Getting a detailed overview of how content renders visually
-- Comparing designs or understanding reference sites
-- Viewing the current state of the preview
-
-## Caching
-
-- Screenshots are cached for 1 hour by default to improve performance and reduce costs
-- Use `skipCache: true` to force a fresh screenshot when you need to see the latest changes
-
-## Parameters
-
-```typescript
-{
-  url: string,           // Required: URL of webpage to screenshot
-  skipCache?: boolean    // Optional: Force fresh screenshot (default: false)
-}
-```
+### Required Parameters
+Expect the main agent to provide:
+- `url` (string, required): The URL of the webpage to screenshot.
+- `skipCache` (boolean, optional): Force a fresh screenshot (default is false).
