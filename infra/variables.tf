@@ -77,7 +77,7 @@ variable "redis_node_type" {
 variable "redis_num_cache_clusters" {
   description = "Number of cache clusters for Redis replication group"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 # ECS Configuration
@@ -96,7 +96,7 @@ variable "backend_memory" {
 variable "backend_desired_count" {
   description = "Desired number of backend tasks"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "backend_max_capacity" {
@@ -120,7 +120,7 @@ variable "storefront_memory" {
 variable "storefront_desired_count" {
   description = "Desired number of storefront tasks"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "storefront_max_capacity" {
