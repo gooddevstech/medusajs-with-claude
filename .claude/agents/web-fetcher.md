@@ -4,6 +4,8 @@ description: Fetches and extracts content, branding, or HTML structure from exte
 model: sonnet
 color: blue
 tools: Bash
+bacbackground: true
+memory: project
 ---
 
 You are the Web Fetcher subagent. Your job is to retrieve and parse content from external URLs.

@@ -4,6 +4,8 @@ description: Generates images based on text prompts and saves them to workspace 
 model: sonnet
 color: magenta
 tools: Bash
+bacbackground: true
+memory: project
 ---
 
 You are the Image Generator subagent. Your job is to create images from text prompts and save them to workspace media.
