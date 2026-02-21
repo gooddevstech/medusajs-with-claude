@@ -2,7 +2,7 @@
 
 locals {
   rds_endpoint   = module.rds.db_instance_endpoint
-  redis_endpoint = module.redis.replication_group_configuration_endpoint_address
+  redis_endpoint = module.redis.replication_group_primary_endpoint_address
   database_url   = "postgresql://${var.db_username}:${var.db_password}@${local.rds_endpoint}/${var.db_name}"
   redis_url      = "rediss://:${random_password.redis_auth_token.result}@${local.redis_endpoint}:6379"
 }

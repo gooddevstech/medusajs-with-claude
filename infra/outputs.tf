@@ -82,7 +82,7 @@ output "rds_port" {
 # Redis Outputs
 output "redis_endpoint" {
   description = "ElastiCache Redis endpoint"
-  value       = module.redis.replication_group_configuration_endpoint_address
+  value       = module.redis.replication_group_primary_endpoint_address
   sensitive   = true
 }
 
