@@ -48,22 +48,22 @@ module "ecs_tasks_sg" {
   tags = merge(var.tags, { Name = "${var.project_name}-ecs-tasks-sg" })
 }
 
-# RDS Security Group - allows PostgreSQL from ECS tasks
+# RDS Security Group - allows PostgreSQL from within the VPC
 module "rds_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
   name        = "${var.project_name}-rds-sg"
-  description = "Security group for RDS - allows PostgreSQL from ECS tasks"
+  description = "Security group for RDS - allows PostgreSQL from VPC"
   vpc_id      = data.aws_vpc.default.id
 
-  ingress_with_source_security_group_id = [
+  ingress_with_cidr_blocks = [
     {
-      from_port                = 5432
-      to_port                  = 5432
-      protocol                 = "tcp"
-      description              = "PostgreSQL from ECS tasks"
-      source_security_group_id = module.ecs_tasks_sg.security_group_id
+      from_port   = 5432
+      to_port     = 5432
+      protocol    = "tcp"
+      description = "PostgreSQL from VPC"
+      cidr_blocks = data.aws_vpc.default.cidr_block
     }
   ]
 
@@ -72,22 +72,22 @@ module "rds_sg" {
   tags = merge(var.tags, { Name = "${var.project_name}-rds-sg" })
 }
 
-# Redis Security Group - allows Redis from ECS tasks
+# Redis Security Group - allows Redis from within the VPC
 module "redis_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
   name        = "${var.project_name}-redis-sg"
-  description = "Security group for Redis - allows Redis from ECS tasks"
+  description = "Security group for Redis - allows Redis from VPC"
   vpc_id      = data.aws_vpc.default.id
 
-  ingress_with_source_security_group_id = [
+  ingress_with_cidr_blocks = [
     {
-      from_port                = 6379
-      to_port                  = 6379
-      protocol                 = "tcp"
-      description              = "Redis from ECS tasks"
-      source_security_group_id = module.ecs_tasks_sg.security_group_id
+      from_port   = 6379
+      to_port     = 6379
+      protocol    = "tcp"
+      description = "Redis from VPC"
+      cidr_blocks = data.aws_vpc.default.cidr_block
     }
   ]
 
