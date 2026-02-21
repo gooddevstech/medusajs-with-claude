@@ -67,7 +67,7 @@ module "alb" {
         timeout             = 5
         interval            = 30
         path                = "/"
-        matcher             = "200"
+        matcher             = "200-399"
       }
     }
 
