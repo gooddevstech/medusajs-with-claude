@@ -82,19 +82,21 @@ jobs:
 
       - name: Get Terraform Outputs
         id: outputs
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: always() && github.ref == 'refs/heads/main'
         run: |
-          echo "ALB_DNS=$(terraform output -raw alb_dns_name)" >> $GITHUB_OUTPUT
-          echo "BACKEND_ECR=$(terraform output -raw backend_repository_url)" >> $GITHUB_OUTPUT
-          echo "STOREFRONT_ECR=$(terraform output -raw storefront_repository_url)" >> $GITHUB_OUTPUT
-          echo "RDS_ENDPOINT=$(terraform output -raw rds_endpoint)" >> $GITHUB_OUTPUT
-          echo "REDIS_ENDPOINT=$(terraform output -raw redis_endpoint)" >> $GITHUB_OUTPUT
+          terraform output -raw alb_dns_name 2>/dev/null && echo "ALB_DNS=$(terraform output -raw alb_dns_name)" >> $GITHUB_OUTPUT || true
+          terraform output -raw backend_repository_url 2>/dev/null && echo "BACKEND_ECR=$(terraform output -raw backend_repository_url)" >> $GITHUB_OUTPUT || true
+          terraform output -raw storefront_repository_url 2>/dev/null && echo "STOREFRONT_ECR=$(terraform output -raw storefront_repository_url)" >> $GITHUB_OUTPUT || true
+          terraform output -raw rds_endpoint 2>/dev/null && echo "RDS_ENDPOINT=$(terraform output -raw rds_endpoint)" >> $GITHUB_OUTPUT || true
+          terraform output -raw redis_endpoint 2>/dev/null && echo "REDIS_ENDPOINT=$(terraform output -raw redis_endpoint)" >> $GITHUB_OUTPUT || true
+          echo "=== Route53 Nameservers (point your domain registrar here) ==="
+          terraform output -json route53_nameservers 2>/dev/null || true
 
       - name: Create/Update SSM Parameters
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.outputs.outputs.RDS_ENDPOINT != ''
         run: |
           # Database URL
-          DATABASE_URL="postgresql://${{ secrets.TF_VAR_db_username }}:${{ secrets.TF_VAR_db_password }}@${{ steps.outputs.outputs.RDS_ENDPOINT }}:5432/${{ secrets.TF_VAR_db_name }}"
+          DATABASE_URL="postgresql://${{ secrets.TF_VAR_DB_USERNAME }}:${{ secrets.TF_VAR_DB_PASSWORD }}@${{ steps.outputs.outputs.RDS_ENDPOINT }}:5432/medusa"
           aws ssm put-parameter \
             --name /tindahang/database_url \
             --value "$DATABASE_URL" \
@@ -102,8 +104,8 @@ jobs:
             --overwrite \
             --region ${{ secrets.AWS_REGION }}
           
-          # Redis URL
-          REDIS_URL="rediss://default:${{ secrets.TF_VAR_redis_password }}@${{ steps.outputs.outputs.REDIS_ENDPOINT }}:6379"
+          # Redis URL - auth token is managed by Terraform/Secrets Manager
+          REDIS_URL="rediss://${{ steps.outputs.outputs.REDIS_ENDPOINT }}:6379"
           aws ssm put-parameter \
             --name /tindahang/redis_url \
             --value "$REDIS_URL" \
