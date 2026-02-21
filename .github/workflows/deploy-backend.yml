@@ -111,8 +111,7 @@ jobs:
         run: |
           aws ecs wait services-stable \
             --cluster tindahang-ecs \
-            --services tindahang-backend \
-            --max-attempts 60
+            --services tindahang-backend
 
       - name: Verify service health
         run: |
