@@ -92,10 +92,7 @@ jobs:
         id: outputs
         if: always() && github.ref == 'refs/heads/main'
         run: |
-          terraform output -raw alb_dns_name 2>/dev/null && echo "ALB_DNS=$(terraform output -raw alb_dns_name)" >> $GITHUB_OUTPUT || true
-          terraform output -raw backend_repository_url 2>/dev/null && echo "BACKEND_ECR=$(terraform output -raw backend_repository_url)" >> $GITHUB_OUTPUT || true
-          terraform output -raw storefront_repository_url 2>/dev/null && echo "STOREFRONT_ECR=$(terraform output -raw storefront_repository_url)" >> $GITHUB_OUTPUT || true
-          echo "=== Route53 Nameservers (point your domain registrar here) ==="
+          echo "=== Route53 Nameservers. Update your domain registrar here ==="
           terraform output -json route53_nameservers 2>/dev/null || true
 
       - name: Create Action Artifacts
