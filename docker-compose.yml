@@ -56,6 +56,8 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       DB_PORT: 5432
+    env_file:
+      - ./.env
 
     ports:
       - "9000:9000"
@@ -80,6 +82,8 @@ services:
       NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:-pk_19e9b9263f9882716b7d2496dd270f282d940074e0e0ec9cdb9a40db5df94ac9}
       REVALIDATE_SECRET: supersecret
       NEXT_PUBLIC_PAYREX_PUBLIC_KEY: ${NEXT_PUBLIC_PAYREX_PUBLIC_KEY:-pk_test_change_me}
+    env_file:
+      - ./storefront/.env
     ports:
       - "8000:8000"
     volumes:
