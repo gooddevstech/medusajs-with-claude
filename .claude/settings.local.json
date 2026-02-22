@@ -59,7 +59,10 @@
       "mcp__plugin_medusa-dev_MedusaDocs__ask_medusa_question",
       "Bash(find:*)",
       "Bash(yarn build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(docker ps:*)",
+      "Bash(grep:*)",
+      "Bash(git:*)"
     ]
   }
 }
