@@ -105,6 +105,9 @@ class PayRexProviderService extends AbstractPaymentProvider<PayRexOptions> {
         ...(input.data?.cart_id
           ? { "metadata[cart_id]": String(input.data.cart_id) }
           : {}),
+        ...(input.data?.session_id
+          ? { "metadata[session_id]": String(input.data.session_id) }
+          : {}),
         ...(this.captureType_ === "manual"
           ? { "payment_method_options[card][capture_type]": "manual" }
           : {}),
@@ -271,7 +274,7 @@ class PayRexProviderService extends AbstractPaymentProvider<PayRexOptions> {
         return {
           action: "authorized",
           data: {
-            session_id: intent.id,
+            session_id: intent.metadata?.session_id ?? intent.id,
             amount: new BigNumber(intent.amount),
           },
         }
@@ -280,7 +283,7 @@ class PayRexProviderService extends AbstractPaymentProvider<PayRexOptions> {
         return {
           action: "authorized",
           data: {
-            session_id: intent.id,
+            session_id: intent.metadata?.session_id ?? intent.id,
             amount: new BigNumber(intent.amount_capturable ?? intent.amount),
           },
         }
@@ -297,6 +300,11 @@ class PayRexProviderService extends AbstractPaymentProvider<PayRexOptions> {
   }
 
   private verifyWebhookSignature(rawBody: string, signatureHeader: string): void {
+    if (!this.webhookSecret_) {
+      // No secret configured — skip verification (safe for local development only)
+      return
+    }
+
     if (!signatureHeader) {
       throw new MedusaError(
         MedusaError.Types.UNAUTHORIZED,
