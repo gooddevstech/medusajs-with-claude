@@ -77,7 +77,7 @@ variable "redis_node_type" {
 variable "redis_num_cache_clusters" {
   description = "Number of cache clusters for Redis replication group"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 # ECS Configuration
@@ -155,11 +155,18 @@ variable "cookie_secret" {
   sensitive   = true
 }
 
+variable "payrex_publishable_key" {
+  description = "PayRex client-side publishable key — it's used in the storefront to initialize the PayRex payment UI"
+  type        = string
+  sensitive   = true
+  default     = "pk_placeholder"
+}
+
 variable "medusa_publishable_key" {
   description = "Medusa publishable API key for storefront (set after first Medusa deploy)"
   type        = string
   sensitive   = true
-  default     = "placeholder"
+  default     = "pk_placeholder"
 }
 
 variable "revalidate_secret" {

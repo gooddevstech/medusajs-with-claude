@@ -48,6 +48,7 @@ jobs:
           TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
           TF_VAR_jwt_secret: ${{ secrets.MEDUSA_JWT_SECRET }}
           TF_VAR_cookie_secret: ${{ secrets.COOKIE_SECRET }}
+          TF_VAR_payrex_publishable_key: ${{ secrets.NEXT_PUBLIC_PAYREX_PUBLIC_KEY }}
           TF_VAR_medusa_publishable_key: ${{ secrets.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY }}
           TF_VAR_revalidate_secret: ${{ secrets.REVALIDATE_SECRET }}
         run: |
@@ -78,6 +79,7 @@ jobs:
           TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
           TF_VAR_jwt_secret: ${{ secrets.MEDUSA_JWT_SECRET }}
           TF_VAR_cookie_secret: ${{ secrets.COOKIE_SECRET }}
+          TF_VAR_payrex_publishable_key: ${{ secrets.NEXT_PUBLIC_PAYREX_PUBLIC_KEY }}
           TF_VAR_medusa_publishable_key: ${{ secrets.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY }}
           TF_VAR_revalidate_secret: ${{ secrets.REVALIDATE_SECRET }}
         run: terraform apply -auto-approve tfplan
