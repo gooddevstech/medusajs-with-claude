@@ -155,13 +155,6 @@ variable "cookie_secret" {
   sensitive   = true
 }
 
-variable "payrex_publishable_key" {
-  description = "PayRex client-side publishable key — it's used in the storefront to initialize the PayRex payment UI"
-  type        = string
-  sensitive   = true
-  default     = "pk_placeholder"
-}
-
 variable "medusa_publishable_key" {
   description = "Medusa publishable API key for storefront (set after first Medusa deploy)"
   type        = string
@@ -173,6 +166,27 @@ variable "revalidate_secret" {
   description = "Next.js revalidation secret for storefront"
   type        = string
   sensitive   = true
+}
+
+variable "payrex_publishable_key" {
+  description = "PayRex client-side publishable key — it's used in the storefront to initialize the PayRex payment UI"
+  type        = string
+  sensitive   = true
+  default     = "pk_placeholder"
+}
+
+variable "payrex_secret_key" {
+  description = "PayRex secret key to authenticate requests from the backend"
+  type        = string
+  sensitive   = true
+  default     = "sk_placeholder"
+}
+
+variable "payrex_webhook_secret" {
+  description = "PayRex webhook signing or secret key to for verification of incoming webhook events"
+  type        = string
+  sensitive   = true
+  default     = "whsk_placeholder"
 }
 
 # Tags

@@ -54,3 +54,28 @@ resource "aws_ssm_parameter" "revalidate_secret" {
 
   tags = var.tags
 }
+
+resource "aws_ssm_parameter" "payrex_publishable_key" {
+  name  = "/${var.project_name}/payrex_publishable_key"
+  type  = "SecureString"
+  value = var.payrex_publishable_key != "" ? var.payrex_publishable_key : "placeholder"
+
+  tags = var.tags
+}
+
+resource "aws_ssm_parameter" "payrex_secret_key" {
+  name  = "/${var.project_name}/payrex_secret_key"
+  type  = "SecureString"
+  value = var.payrex_secret_key != "" ? var.payrex_secret_key : "placeholder"
+
+  tags = var.tags
+}
+
+
+resource "aws_ssm_parameter" "payrex_webhook_secret" {
+  name  = "/${var.project_name}/payrex_webhook_secret"
+  type  = "SecureString"
+  value = var.payrex_webhook_secret != "" ? var.payrex_webhook_secret : "placeholder"
+
+  tags = var.tags
+}

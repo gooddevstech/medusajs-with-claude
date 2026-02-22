@@ -83,6 +83,14 @@ resource "aws_ecs_task_definition" "backend" {
         {
           name      = "COOKIE_SECRET"
           valueFrom = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.project_name}/cookie_secret"
+        },
+        {
+          name      = "PAYREX_WEBHOOK_SECRET"
+          valueFrom = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.project_name}/payrex_webhook_secret"
+        },
+        {
+          name      = "PAYREX_SECRET_KEY"
+          valueFrom = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.project_name}/payrex_secret_key"
         }
       ]
       logConfiguration = {
@@ -152,6 +160,10 @@ resource "aws_ecs_task_definition" "storefront" {
         {
           name      = "REVALIDATE_SECRET"
           valueFrom = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.project_name}/revalidate_secret"
+        },
+        {
+          name      = "NEXT_PUBLIC_PAYREX_PUBLIC_KEY"
+          valueFrom = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.project_name}/payrex_publishable_key"
         }
       ]
       logConfiguration = {
