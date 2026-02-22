@@ -186,7 +186,7 @@ const Payment = ({
               <img
                 src="/qrph.jpg"
                 alt="TindaPH QRPh Payment"
-                className="w-64 h-auto"
+                className="w-80 h-auto"
               />
               <Text className="txt-small text-ui-fg-subtle text-center">
                 Open your banking app (BDO, BPI, GCash, Maya, UnionBank, etc.) and scan the QR code to complete your payment.
