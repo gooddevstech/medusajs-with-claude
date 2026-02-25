@@ -7,6 +7,38 @@ locals {
   redis_url      = "rediss://:${random_password.redis_auth_token.result}@${local.redis_endpoint}:6379"
 }
 
+resource "aws_ssm_parameter" "database_host" {
+  name  = "/${var.project_name}/database_host"
+  type  = "SecureString"
+  value = local.rds_endpoint
+
+  tags = var.tags
+}
+
+resource "aws_ssm_parameter" "database_name" {
+  name  = "/${var.project_name}/database_name"
+  type  = "SecureString"
+  value = var.db_name
+
+  tags = var.tags
+}
+
+resource "aws_ssm_parameter" "database_password" {
+  name  = "/${var.project_name}/database_password"
+  type  = "SecureString"
+  value = var.db_password
+
+  tags = var.tags
+}
+
+resource "aws_ssm_parameter" "database_username" {
+  name  = "/${var.project_name}/database_username"
+  type  = "SecureString"
+  value = var.db_username
+
+  tags = var.tags
+}
+
 resource "aws_ssm_parameter" "database_url" {
   name  = "/${var.project_name}/database_url"
   type  = "SecureString"

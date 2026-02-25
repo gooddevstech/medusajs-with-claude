@@ -59,6 +59,10 @@ resource "aws_ecs_task_definition" "backend" {
       ]
       environment = [
         {
+          name  = "MEDUSA_BACKEND_URL"
+          value = "https://api.${var.domain_name}"
+        },
+        {
           name  = "NODE_ENV"
           value = "production"
         },
@@ -68,6 +72,22 @@ resource "aws_ecs_task_definition" "backend" {
         }
       ]
       secrets = [
+        {
+          name      = "DATABASE_HOST"
+          valueFrom = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.project_name}/database_host"
+        },
+        {
+          name      = "DATABASE_NAME"
+          valueFrom = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.project_name}/database_name"
+        },
+        {
+          name      = "DATABASE_USERNAME"
+          valueFrom = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.project_name}/database_username"
+        },
+        {
+          name      = "DATABASE_PASSWORD"
+          valueFrom = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.project_name}/database_password"
+        },
         {
           name      = "DATABASE_URL"
           valueFrom = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.project_name}/database_url"
