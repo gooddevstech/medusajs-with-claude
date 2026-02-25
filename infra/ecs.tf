@@ -164,7 +164,7 @@ resource "aws_ecs_task_definition" "storefront" {
           value = "https://${var.domain_name}"
         },
         {
-          name  = "NEXT_PUBLIC_MEDUSA_BACKEND_URL"
+          name  = "MEDUSA_BACKEND_URL"
           value = "https://api.${var.domain_name}"
         },
         {
