@@ -9,9 +9,11 @@ on:
       - 'src/**'
       - 'package.json'
       - 'yarn.lock'
-      - 'Dockerfile'
+      - '.yarnrc.yml'
+      - 'Dockerfile.prod'
       - 'medusa-config.ts'
       - 'tsconfig.json'
+      - 'start.sh'
       - '.github/workflows/deploy-backend.yml'
 
 concurrency:
@@ -46,9 +48,10 @@ jobs:
           ECR_REPOSITORY: tindaph-backend
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          docker build --platform linux/amd64 \
+                       -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
                        -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
-                       -f Dockerfile .
+                       -f Dockerfile.prod .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
@@ -71,11 +74,15 @@ jobs:
         id: migration
         continue-on-error: true
         run: |
-          # Get subnets and security groups
-          SUBNET=$(aws ec2 describe-subnets --region ${{ secrets.AWS_REGION }} --filters Name=tag:Environment,Values=production --query 'Subnets[0].SubnetId' --output text)
-          SG=$(aws ec2 describe-security-groups --region ${{ secrets.AWS_REGION }} --filters Name=tag:Name,Values=*ecs-tasks-sg --query 'SecurityGroups[0].GroupId' --output text)
-          
-          # Run migration task
+          SUBNET=$(aws ec2 describe-subnets \
+            --region ${{ secrets.AWS_REGION }} \
+            --filters Name=tag:Environment,Values=production \
+            --query 'Subnets[0].SubnetId' --output text)
+          SG=$(aws ec2 describe-security-groups \
+            --region ${{ secrets.AWS_REGION }} \
+            --filters Name=tag:Name,Values=*ecs-tasks-sg \
+            --query 'SecurityGroups[0].GroupId' --output text)
+
           TASK_ARN=$(aws ecs run-task \
             --cluster tindaph-ecs \
             --task-definition tindaph-backend \
@@ -84,34 +91,26 @@ jobs:
             --overrides "containerOverrides=[{name=backend,command=[\"yarn\",\"medusa\",\"db:migrate\"]}]" \
             --query 'tasks[0].taskArn' \
             --output text)
-          
+
           echo "Migration task: $TASK_ARN"
-          
-          # Wait and check status
-          aws ecs wait tasks-running --cluster tindaph-ecs --tasks $TASK_ARN || true
-          sleep 15
-          
-          TASK_STATUS=$(aws ecs describe-tasks \
+          aws ecs wait tasks-stopped --cluster tindaph-ecs --tasks $TASK_ARN || true
+
+          EXIT_CODE=$(aws ecs describe-tasks \
             --cluster tindaph-ecs \
             --tasks $TASK_ARN \
-            --query 'tasks[0].lastStatus' \
+            --query 'tasks[0].containers[0].exitCode' \
             --output text)
-          
-          echo "Migration status: $TASK_STATUS"
 
-      - name: Deploy to ECS service
-        run: |
-          aws ecs update-service \
-            --cluster tindaph-ecs \
-            --service tindaph-backend \
-            --task-definition tindaph-backend \
-            --force-new-deployment
+          echo "Migration exit code: $EXIT_CODE"
+          [ "$EXIT_CODE" = "0" ] || echo "::warning::Migration exited with code $EXIT_CODE"
 
-      - name: Wait for service to stabilize
-        run: |
-          aws ecs wait services-stable \
-            --cluster tindaph-ecs \
-            --services tindaph-backend
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: tindaph-backend
+          cluster: tindaph-ecs
+          wait-for-service-stability: true
 
       - name: Verify service health
         run: |
@@ -120,15 +119,15 @@ jobs:
             --services tindaph-backend \
             --query 'services[0].runningCount' \
             --output text)
-          
+
           DESIRED_COUNT=$(aws ecs describe-services \
             --cluster tindaph-ecs \
             --services tindaph-backend \
             --query 'services[0].desiredCount' \
             --output text)
-          
+
           echo "Backend service: $RUNNING_COUNT/$DESIRED_COUNT tasks running"
-          
+
           if [ "$RUNNING_COUNT" -ne "$DESIRED_COUNT" ]; then
             exit 1
           fi

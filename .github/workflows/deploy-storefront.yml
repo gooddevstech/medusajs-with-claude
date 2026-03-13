@@ -41,9 +41,13 @@ jobs:
           ECR_REPOSITORY: tindaph-storefront
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          docker build --platform linux/amd64 \
+                       -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
                        -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
-                       -f storefront/Dockerfile \
+                       -f storefront/Dockerfile.prod \
+                       --build-arg NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY }} \
+                       --build-arg NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://api.tindaph.app \
+                       --build-arg NEXT_PUBLIC_BASE_URL=https://tindaph.app \
                        storefront/
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
@@ -63,19 +67,13 @@ jobs:
           container-name: storefront
           image: ${{ steps.image.outputs.image }}
 
-      - name: Deploy to ECS service
-        run: |
-          aws ecs update-service \
-            --cluster tindaph-ecs \
-            --service tindaph-storefront \
-            --task-definition tindaph-storefront \
-            --force-new-deployment
-
-      - name: Wait for service to stabilize
-        run: |
-          aws ecs wait services-stable \
-            --cluster tindaph-ecs \
-            --services tindaph-storefront
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: tindaph-storefront
+          cluster: tindaph-ecs
+          wait-for-service-stability: true
 
       - name: Verify service health
         run: |
@@ -84,15 +82,15 @@ jobs:
             --services tindaph-storefront \
             --query 'services[0].runningCount' \
             --output text)
-          
+
           DESIRED_COUNT=$(aws ecs describe-services \
             --cluster tindaph-ecs \
             --services tindaph-storefront \
             --query 'services[0].desiredCount' \
             --output text)
-          
+
           echo "Storefront service: $RUNNING_COUNT/$DESIRED_COUNT tasks running"
-          
+
           if [ "$RUNNING_COUNT" -ne "$DESIRED_COUNT" ]; then
             exit 1
           fi
