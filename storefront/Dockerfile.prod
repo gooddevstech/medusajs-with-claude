@@ -1,29 +1,26 @@
 # Multi-stage production Dockerfile for Next.js Storefront
-FROM node:20-alpine AS dependencies
-
-WORKDIR /app
-
-# Copy package files
-COPY package.json yarn.lock ./
-
-# Install production dependencies only
-RUN yarn install --frozen-lockfile --production=true && \
-    yarn cache clean
-
-# Builder stage
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json yarn.lock ./
+# Copy package files including yarn berry config
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn ./.yarn
 
-# Install all dependencies (including dev)
-RUN yarn install --frozen-lockfile && \
+# Install all dependencies
+RUN yarn install --immutable && \
     yarn cache clean
 
 # Copy source code
 COPY . .
+
+# Build-time env vars (NEXT_PUBLIC_* are baked into the bundle at build time)
+ARG NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://api.tindaph.app
+ARG NEXT_PUBLIC_BASE_URL=https://tindaph.app
+ENV NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=$NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY \
+    NEXT_PUBLIC_MEDUSA_BACKEND_URL=$NEXT_PUBLIC_MEDUSA_BACKEND_URL \
+    NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
 
 # Build Next.js application
 RUN yarn build
@@ -36,23 +33,23 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init curl
 
-# Copy production dependencies from dependencies stage
-COPY --from=dependencies /app/node_modules ./node_modules
-
-# Copy package files
-COPY --from=builder /app/package.json /app/yarn.lock ./
+# Copy package files and yarn berry config
+COPY --from=builder /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
+COPY --from=builder /app/.yarn ./.yarn
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy next config and essential files
 COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/check-env-variables.js ./
 COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/public ./public
 
-# Copy built Next.js application (.next folder and standalone if set)
+# Copy built Next.js application
 COPY --from=builder /app/.next ./.next
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
+    CMD curl -f http://localhost:8000/api/health || exit 1
 
 # Use dumb-init to handle signals
 ENTRYPOINT ["dumb-init", "--"]
