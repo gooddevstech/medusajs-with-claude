@@ -132,6 +132,69 @@ jobs:
             exit 1
           fi
 
+      - name: Ensure publishable key is linked to sales channel
+        id: publishable-key
+        run: |
+          SUBNET=$(aws ec2 describe-subnets \
+            --region ${{ secrets.AWS_REGION }} \
+            --filters Name=tag:Environment,Values=production \
+            --query 'Subnets[0].SubnetId' --output text)
+          SG=$(aws ec2 describe-security-groups \
+            --region ${{ secrets.AWS_REGION }} \
+            --filters Name=tag:Name,Values=*ecs-tasks-sg \
+            --query 'SecurityGroups[0].GroupId' --output text)
+
+          START_TIME=$(date -u +%s000)
+
+          TASK_ARN=$(aws ecs run-task \
+            --cluster tindaph-ecs \
+            --task-definition tindaph-backend \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNET],securityGroups=[$SG],assignPublicIp=ENABLED}" \
+            --overrides "containerOverrides=[{name=backend,command=[\"yarn\",\"medusa\",\"exec\",\"./src/scripts/create-publishable-key.ts\"]}]" \
+            --query 'tasks[0].taskArn' --output text)
+
+          echo "Publishable key task: $TASK_ARN"
+          aws ecs wait tasks-stopped --cluster tindaph-ecs --tasks $TASK_ARN
+
+          PK=$(aws logs filter-log-events \
+            --log-group-name /ecs/tindaph-backend \
+            --start-time $START_TIME \
+            --filter-pattern "pk_" \
+            --query 'events[0].message' --output text | grep -o 'pk_[a-f0-9]*')
+
+          echo "Publishable key: $PK"
+
+          if [ -z "$PK" ]; then
+            echo "::error::Could not retrieve publishable key from logs"
+            exit 1
+          fi
+
+          CURRENT=$(aws ssm get-parameter \
+            --name /tindaph/medusa_publishable_key \
+            --with-decryption \
+            --query 'Parameter.Value' --output text)
+
+          if [ "$PK" != "$CURRENT" ]; then
+            echo "Key changed — updating SSM"
+            aws ssm put-parameter \
+              --name /tindaph/medusa_publishable_key \
+              --value "$PK" \
+              --type SecureString \
+              --overwrite
+            echo "key_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "Key unchanged"
+            echo "key_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger storefront redeploy if key changed
+        if: steps.publishable-key.outputs.key_changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run deploy-storefront.yml --repo ${{ github.repository }} --ref main
+
       - name: Deployment Summary
         run: |
           echo "✅ Backend deployment completed successfully"
