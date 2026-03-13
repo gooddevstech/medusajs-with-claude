@@ -1,5 +1,7 @@
 import { Metadata } from "next"
 
+export const dynamic = "force-dynamic"
+
 import { listCartOptions, retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
 import { getBaseURL } from "@lib/util/env"
