@@ -10,6 +10,8 @@ type Props = {
   searchParams: Promise<{ v_id?: string }>
 }
 
+export const dynamicParams = true
+
 export async function generateStaticParams() {
   try {
     const countryCodes = await listRegions().then((regions) =>
