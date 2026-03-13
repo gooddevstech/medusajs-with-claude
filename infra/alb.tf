@@ -35,6 +35,19 @@ module "alb" {
       }
 
       rules = {
+        api_host = {
+          priority = 5
+          actions = [{
+            type             = "forward"
+            target_group_key = "backend"
+          }]
+          conditions = [{
+            host_header = {
+              values = ["api.tindaph.app"]
+            }
+          }]
+        }
+
         backend_api = {
           priority = 10
           actions = [{
@@ -82,10 +95,10 @@ module "alb" {
         enabled             = true
         healthy_threshold   = 2
         unhealthy_threshold = 3
-        timeout             = 5
+        timeout             = 10
         interval            = 30
-        path                = "/admin"
-        matcher             = "200-399"
+        path                = "/health"
+        matcher             = "200"
       }
     }
   }
