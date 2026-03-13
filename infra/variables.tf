@@ -84,13 +84,13 @@ variable "redis_num_cache_clusters" {
 variable "backend_cpu" {
   description = "CPU units for backend ECS task"
   type        = number
-  default     = 512
+  default     = 256
 }
 
 variable "backend_memory" {
   description = "Memory (MB) for backend ECS task"
   type        = number
-  default     = 1024
+  default     = 512
 }
 
 variable "backend_desired_count" {
@@ -108,13 +108,13 @@ variable "backend_max_capacity" {
 variable "storefront_cpu" {
   description = "CPU units for storefront ECS task"
   type        = number
-  default     = 512
+  default     = 256
 }
 
 variable "storefront_memory" {
   description = "Memory (MB) for storefront ECS task"
   type        = number
-  default     = 1024
+  default     = 512
 }
 
 variable "storefront_desired_count" {
