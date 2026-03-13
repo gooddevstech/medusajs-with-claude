@@ -1,4 +1,4 @@
-import { CreateInventoryLevelInput, ExecArgs } from "@medusajs/framework/types";
+import { CreateInventoryLevelInput, ExecArgs, RuleOperatorType } from "@medusajs/framework/types";
 import {
   ContainerRegistrationKeys,
   Modules,
@@ -216,11 +216,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   const phZoneId = fulfillmentSet.service_zones[0].id;
 
-  const shippingRules = [
+  const shippingRules: { attribute: string; operator: RuleOperatorType; value: string | string[] }[] = [
     {
       attribute: "enabled_in_store",
       value: "true",
-      operator: "eq",
+      operator: "eq" as RuleOperatorType,
     },
     {
       attribute: "is_return",

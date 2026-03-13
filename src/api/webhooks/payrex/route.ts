@@ -14,7 +14,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const webhookPayload: ProviderWebhookPayload = {
     provider: "payrex_payrex",
     payload: {
-      data: req.body,
+      data: req.body as Record<string, unknown>,
       rawData: rawBody,
       headers: req.headers,
     },
