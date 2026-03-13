@@ -38,7 +38,7 @@ module "redis" {
 resource "random_password" "redis_auth_token" {
   length           = 32
   special          = true
-  override_special = "!$&*-_=+"
+  override_special = "$&-+"
 }
 
 # Store Redis auth token in Secrets Manager
