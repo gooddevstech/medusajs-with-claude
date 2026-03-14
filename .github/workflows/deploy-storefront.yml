@@ -34,6 +34,18 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Fetch publishable key from SSM
+        id: get-pk
+        run: |
+          PK=$(aws ssm get-parameter \
+            --name /tindaph/medusa_publishable_key \
+            --with-decryption \
+            --query 'Parameter.Value' --output text 2>/dev/null || echo "")
+          if [ -z "$PK" ]; then
+            PK="${{ secrets.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY }}"
+          fi
+          echo "publishable_key=$PK" >> $GITHUB_OUTPUT
+
       - name: Build, tag, and push storefront image to ECR
         id: image
         env:
@@ -45,7 +57,7 @@ jobs:
                        -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
                        -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
                        -f storefront/Dockerfile.prod \
-                       --build-arg NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY }} \
+                       --build-arg NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${{ steps.get-pk.outputs.publishable_key }} \
                        --build-arg NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://api.tindaph.app \
                        --build-arg NEXT_PUBLIC_BASE_URL=https://tindaph.app \
                        storefront/
