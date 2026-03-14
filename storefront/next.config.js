@@ -32,6 +32,10 @@ const nextConfig = {
         hostname: "localhost",
       },
       {
+        protocol: "https",
+        hostname: "api.tindaph.app",
+      },
+      {
         protocol: "http",
         hostname: "medusa",
       },
