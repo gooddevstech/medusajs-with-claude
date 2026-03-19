@@ -79,16 +79,16 @@ output "rds_port" {
   value       = module.rds.db_instance_port
 }
 
-# Redis Outputs
-output "redis_endpoint" {
-  description = "ElastiCache Redis endpoint"
-  value       = module.redis.replication_group_primary_endpoint_address
+# Valkey Serverless Outputs
+output "valkey_endpoint" {
+  description = "ElastiCache Serverless Valkey endpoint"
+  value       = aws_elasticache_serverless_cache.valkey.endpoint[0].address
   sensitive   = true
 }
 
-output "redis_port" {
-  description = "ElastiCache Redis port"
-  value       = module.redis.replication_group_port
+output "valkey_port" {
+  description = "ElastiCache Serverless Valkey port"
+  value       = aws_elasticache_serverless_cache.valkey.endpoint[0].port
 }
 
 # S3 Outputs
@@ -133,12 +133,6 @@ output "domain_urls" {
     admin      = "https://admin.${var.domain_name}"
     media      = "https://media.${var.domain_name}"
   }
-}
-
-# Secrets Manager Outputs
-output "redis_auth_token_secret_arn" {
-  description = "Redis auth token secret ARN"
-  value       = aws_secretsmanager_secret.redis_auth_token.arn
 }
 
 # ECS Services Outputs

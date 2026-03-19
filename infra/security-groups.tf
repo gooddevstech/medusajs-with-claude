@@ -72,13 +72,13 @@ module "rds_sg" {
   tags = merge(var.tags, { Name = "${var.project_name}-rds-sg" })
 }
 
-# Redis Security Group - allows Redis from within the VPC
+# Valkey Security Group - allows Valkey/Redis from within the VPC
 module "redis_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
-  name        = "${var.project_name}-redis-sg"
-  description = "Security group for Redis - allows Redis from VPC"
+  name        = "${var.project_name}-valkey-sg"
+  description = "Security group for Valkey serverless cache - allows access from VPC"
   vpc_id      = data.aws_vpc.default.id
 
   ingress_with_cidr_blocks = [
@@ -86,12 +86,12 @@ module "redis_sg" {
       from_port   = 6379
       to_port     = 6379
       protocol    = "tcp"
-      description = "Redis from VPC"
+      description = "Valkey from VPC"
       cidr_blocks = data.aws_vpc.default.cidr_block
     }
   ]
 
   egress_rules = ["all-all"]
 
-  tags = merge(var.tags, { Name = "${var.project_name}-redis-sg" })
+  tags = merge(var.tags, { Name = "${var.project_name}-valkey-sg" })
 }

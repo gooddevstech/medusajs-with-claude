@@ -67,17 +67,17 @@ variable "db_allocated_storage" {
   default     = 100
 }
 
-# ElastiCache Configuration
-variable "redis_node_type" {
-  description = "ElastiCache node type for Redis"
-  type        = string
-  default     = "cache.t3.micro"
+# ElastiCache Serverless Valkey Configuration
+variable "valkey_max_storage_gb" {
+  description = "Maximum data storage in GB for Valkey serverless cache"
+  type        = number
+  default     = 5
 }
 
-variable "redis_num_cache_clusters" {
-  description = "Number of cache clusters for Redis replication group"
+variable "valkey_max_ecpu_per_second" {
+  description = "Maximum ECPUs per second for Valkey serverless cache"
   type        = number
-  default     = 1
+  default     = 1000
 }
 
 # ECS Configuration

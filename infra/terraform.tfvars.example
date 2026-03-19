@@ -17,9 +17,9 @@ db_password            = "CHANGE_ME_TO_STRONG_PASSWORD"
 db_instance_class      = "db.t3.micro"
 db_allocated_storage   = 100
 
-# ElastiCache Redis Configuration
-redis_node_type              = "cache.t3.micro"
-redis_num_cache_clusters     = 2
+# ElastiCache Serverless Valkey Configuration
+valkey_max_storage_gb        = 5
+valkey_max_ecpu_per_second   = 1000
 
 # ECS Backend Configuration
 backend_cpu           = 512
