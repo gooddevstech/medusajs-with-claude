@@ -374,7 +374,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "http://localhost:9000/static/tulips.jpg",
+              url: `${process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"}/static/tulips.jpg`,
             },
           ],
           options: [
@@ -492,7 +492,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "http://localhost:9000/static/rose.png",
+              url: `${process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"}/static/rose.png`,
             },
           ],
           options: [
@@ -596,7 +596,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "http://localhost:9000/static/daisies.jpg",
+              url: `${process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"}/static/daisies.jpg`,
             },
           ],
           options: [
@@ -652,7 +652,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "http://localhost:9000/static/craft.jpg",
+              url: `${process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"}/static/craft.jpg`,
             },
           ],
           options: [
@@ -756,7 +756,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
           shipping_profile_id: shippingProfile.id,
           images: [
             {
-              url: "http://localhost:9000/static/bouquet.jpeg",
+              url: `${process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"}/static/bouquet.jpeg`,
             },
           ],
           options: [
