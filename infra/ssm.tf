@@ -1,11 +1,11 @@
 # SSM Parameter Store - application secrets and config for ECS tasks
 
 locals {
-  rds_endpoint   = module.rds.db_instance_endpoint
+  rds_endpoint    = aws_rds_cluster.postgres.endpoint
   valkey_endpoint = aws_elasticache_serverless_cache.valkey.endpoint[0].address
   valkey_port     = aws_elasticache_serverless_cache.valkey.endpoint[0].port
-  database_url   = "postgresql://${var.db_username}:${var.db_password}@${local.rds_endpoint}/${var.db_name}"
-  redis_url      = "rediss://${local.valkey_endpoint}:${local.valkey_port}"
+  database_url    = "postgresql://${var.db_username}:${var.db_password}@${local.rds_endpoint}:5432/${var.db_name}"
+  redis_url       = "rediss://${local.valkey_endpoint}:${local.valkey_port}"
 }
 
 resource "aws_ssm_parameter" "database_host" {

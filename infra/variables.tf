@@ -35,7 +35,7 @@ variable "public_subnets" {
   default     = ["172.31.1.0/24", "172.31.2.0/24"]
 }
 
-# RDS Configuration
+# Aurora Serverless v2 PostgreSQL Configuration
 variable "db_name" {
   description = "Name of the database"
   type        = string
@@ -44,27 +44,27 @@ variable "db_name" {
 }
 
 variable "db_username" {
-  description = "Master username for RDS database"
+  description = "Master username for Aurora database"
   type        = string
   sensitive   = true
 }
 
 variable "db_password" {
-  description = "Master password for RDS database"
+  description = "Master password for Aurora database"
   type        = string
   sensitive   = true
 }
 
-variable "db_instance_class" {
-  description = "RDS instance class"
-  type        = string
-  default     = "db.t3.micro"
+variable "aurora_min_capacity" {
+  description = "Minimum Aurora Serverless v2 capacity in ACUs (0.5 ACU increments)"
+  type        = number
+  default     = 0.5
 }
 
-variable "db_allocated_storage" {
-  description = "Allocated storage for RDS in GB"
+variable "aurora_max_capacity" {
+  description = "Maximum Aurora Serverless v2 capacity in ACUs"
   type        = number
-  default     = 100
+  default     = 4.0
 }
 
 # ElastiCache Serverless Valkey Configuration

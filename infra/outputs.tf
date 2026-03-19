@@ -62,21 +62,21 @@ output "storefront_target_group_arn" {
   value       = module.alb.target_groups["storefront"].arn
 }
 
-# RDS Outputs
+# Aurora Serverless v2 Outputs
 output "rds_endpoint" {
-  description = "RDS database endpoint"
-  value       = module.rds.db_instance_endpoint
+  description = "Aurora cluster writer endpoint"
+  value       = aws_rds_cluster.postgres.endpoint
   sensitive   = true
 }
 
 output "rds_instance_id" {
-  description = "RDS database instance ID"
-  value       = module.rds.db_instance_identifier
+  description = "Aurora cluster identifier"
+  value       = aws_rds_cluster.postgres.cluster_identifier
 }
 
 output "rds_port" {
-  description = "RDS database port"
-  value       = module.rds.db_instance_port
+  description = "Aurora cluster port"
+  value       = aws_rds_cluster.postgres.port
 }
 
 # Valkey Serverless Outputs

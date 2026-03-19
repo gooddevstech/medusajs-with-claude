@@ -10,12 +10,13 @@ environment  = "production"
 vpc_cidr        = "10.0.0.0/16"
 public_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
 
-# RDS Configuration
-db_name                = "medusa"
-db_username            = "medusa_user"
-db_password            = "CHANGE_ME_TO_STRONG_PASSWORD"
-db_instance_class      = "db.t3.micro"
-db_allocated_storage   = 100
+# Aurora Serverless v2 PostgreSQL Configuration
+db_name     = "medusa"
+db_username = "medusa_user"
+db_password = "CHANGE_ME_TO_STRONG_PASSWORD"
+
+aurora_min_capacity = 0.5
+aurora_max_capacity = 4.0
 
 # ElastiCache Serverless Valkey Configuration
 valkey_max_storage_gb        = 5

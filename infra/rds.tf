@@ -1,4 +1,4 @@
-# Create DB subnet group
+# DB Subnet Group
 resource "aws_db_subnet_group" "default" {
   name       = "${var.project_name}-db-subnet-group"
   subnet_ids = data.aws_subnets.public_default.ids
@@ -6,61 +6,61 @@ resource "aws_db_subnet_group" "default" {
   tags = merge(var.tags, { Name = "${var.project_name}-db-subnet-group" })
 }
 
-# RDS Module for Postgres
-module "rds" {
-  source  = "terraform-aws-modules/rds/aws"
-  version = "~> 6.0"
+# Aurora PostgreSQL Serverless v2 Cluster
+resource "aws_rds_cluster" "postgres" {
+  cluster_identifier = "${var.project_name}-postgres"
 
-  identifier = "${var.project_name}-postgres"
+  engine         = "aurora-postgresql"
+  engine_version = "16.6"
 
-  # Engine configuration
-  engine               = "postgres"
-  engine_version       = "16.6"
-  family               = "postgres16"
-  major_engine_version = "16"
-  instance_class       = var.db_instance_class
+  database_name   = var.db_name
+  master_username = var.db_username
+  master_password = var.db_password
+  port            = 5432
 
-  # Storage configuration
-  allocated_storage = var.db_allocated_storage
-  storage_encrypted = true
-  storage_type      = "gp3"
-
-  # Database configuration
-  db_name                     = var.db_name
-  username                    = var.db_username
-  password                    = var.db_password
-  manage_master_user_password = false
-  port                        = 5432
-
-  # Network configuration
-  publicly_accessible    = false
-  vpc_security_group_ids = [module.rds_sg.security_group_id]
   db_subnet_group_name   = aws_db_subnet_group.default.name
-  skip_final_snapshot    = false
+  vpc_security_group_ids = [module.rds_sg.security_group_id]
 
-  # Backup and maintenance
-  backup_retention_period = 1
-  backup_window           = "03:00-04:00"
-  maintenance_window      = "sun:04:00-sun:05:00"
-  copy_tags_to_snapshot   = true
+  storage_encrypted = true
 
-  # Monitoring
-  enabled_cloudwatch_logs_exports        = ["postgresql"]
-  create_cloudwatch_log_group            = true
-  cloudwatch_log_group_retention_in_days = 1
+  serverlessv2_scaling_configuration {
+    min_capacity = var.aurora_min_capacity
+    max_capacity = var.aurora_max_capacity
+  }
 
-  # Enhanced monitoring
-  monitoring_interval                 = 60
-  monitoring_role_arn                 = aws_iam_role.rds_monitoring.arn
-  iam_database_authentication_enabled = true
+  backup_retention_period      = 1
+  preferred_backup_window      = "03:00-04:00"
+  preferred_maintenance_window = "sun:04:00-sun:05:00"
+  copy_tags_to_snapshot        = true
 
-  # Final snapshot
-  final_snapshot_identifier_prefix = "${var.project_name}-postgres-final"
+  skip_final_snapshot       = false
+  final_snapshot_identifier = "${var.project_name}-postgres-final"
+
+  enabled_cloudwatch_logs_exports      = ["postgresql"]
+  iam_database_authentication_enabled  = true
 
   tags = merge(var.tags, { Name = "${var.project_name}-postgres" })
 }
 
-# IAM role for RDS monitoring
+# Aurora Serverless v2 Writer Instance
+resource "aws_rds_cluster_instance" "postgres_writer" {
+  identifier         = "${var.project_name}-postgres-writer"
+  cluster_identifier = aws_rds_cluster.postgres.id
+  instance_class     = "db.serverless"
+  engine             = aws_rds_cluster.postgres.engine
+  engine_version     = aws_rds_cluster.postgres.engine_version
+
+  db_subnet_group_name = aws_db_subnet_group.default.name
+
+  monitoring_interval = 60
+  monitoring_role_arn = aws_iam_role.rds_monitoring.arn
+
+  publicly_accessible = false
+
+  tags = merge(var.tags, { Name = "${var.project_name}-postgres-writer" })
+}
+
+# IAM role for RDS enhanced monitoring
 resource "aws_iam_role" "rds_monitoring" {
   name_prefix = "${var.project_name}-rds-monitoring-"
 

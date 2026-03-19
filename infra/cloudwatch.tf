@@ -98,9 +98,9 @@ resource "aws_cloudwatch_metric_alarm" "ecs_storefront_cpu_high" {
   }
 }
 
-# RDS CPU Utilization Alarm
+# Aurora Serverless v2 CPU Utilization Alarm (per instance)
 resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
-  alarm_name          = "${var.project_name}-rds-cpu-high"
+  alarm_name          = "${var.project_name}-aurora-cpu-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 2
   metric_name         = "CPUUtilization"
@@ -108,28 +108,28 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
   period              = 300
   statistic           = "Average"
   threshold           = 80
-  alarm_description   = "Alert when RDS CPU utilization is high"
+  alarm_description   = "Alert when Aurora writer CPU utilization is high"
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
-    DBInstanceIdentifier = module.rds.db_instance_identifier
+    DBInstanceIdentifier = aws_rds_cluster_instance.postgres_writer.identifier
   }
 }
 
-# RDS Database Storage Alarm
-resource "aws_cloudwatch_metric_alarm" "rds_storage_low" {
-  alarm_name          = "${var.project_name}-rds-storage-low"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "FreeStorageSpace"
+# Aurora Serverless v2 Capacity Alarm (ACU usage approaching max)
+resource "aws_cloudwatch_metric_alarm" "aurora_capacity_high" {
+  alarm_name          = "${var.project_name}-aurora-capacity-high"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "ServerlessDatabaseCapacity"
   namespace           = "AWS/RDS"
   period              = 300
   statistic           = "Average"
-  threshold           = 10737418240 # 10 GB in bytes
-  alarm_description   = "Alert when RDS free storage space is low"
+  threshold           = var.aurora_max_capacity * 0.8
+  alarm_description   = "Alert when Aurora Serverless v2 capacity exceeds 80% of max ACUs"
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
-    DBInstanceIdentifier = module.rds.db_instance_identifier
+    DBClusterIdentifier = aws_rds_cluster.postgres.cluster_identifier
   }
 }
