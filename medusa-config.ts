@@ -17,6 +17,16 @@ module.exports = defineConfig({
     }
   },
   modules: {
+    ...(process.env.S3_BUCKET ? {
+      file: {
+        resolve: "@medusajs/file-s3",
+        options: {
+          file_url: process.env.S3_FILE_URL,
+          region: process.env.S3_REGION,
+          bucket: process.env.S3_BUCKET,
+        }
+      }
+    } : {}),
     eventBus: process.env.NODE_ENV === "test"
       ? { resolve: "@medusajs/event-bus-local" }
       : {

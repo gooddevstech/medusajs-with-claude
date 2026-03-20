@@ -96,6 +96,9 @@ locals {
     COOKIE_SECRET                = data.aws_ssm_parameter.lambda_cookie_secret.value
     PAYREX_SECRET_KEY            = data.aws_ssm_parameter.lambda_payrex_secret_key.value
     PAYREX_WEBHOOK_SECRET        = data.aws_ssm_parameter.lambda_payrex_webhook_secret.value
+    S3_BUCKET                    = module.s3_media.s3_bucket_id
+    S3_REGION                    = data.aws_region.current.name
+    S3_FILE_URL                  = "https://media.${var.domain_name}"
   }
 }
 
