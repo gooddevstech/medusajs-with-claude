@@ -47,6 +47,24 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
+      - name: Remove stale state entries that cause dependency cycles
+        run: |
+          # These old module.redis resources were never destroyed in the Redis→Valkey migration.
+          # They create a cycle: module.redis (destroy) ↔ aws_ssm_parameter.redis_url (update).
+          # Removing them from state lets Terraform proceed; the actual AWS resources will be
+          # cleaned up separately or left as harmless orphans.
+          STALE=(
+            "module.redis.aws_elasticache_subnet_group.this[0]"
+            "module.redis.random_id.this[0]"
+            "module.redis.aws_elasticache_parameter_group.this[0]"
+            "module.redis.aws_security_group.this[0]"
+            "aws_secretsmanager_secret_version.redis_auth_token"
+            "random_password.redis_auth_token"
+          )
+          for addr in "${STALE[@]}"; do
+            terraform state rm "$addr" 2>/dev/null && echo "Removed: $addr" || echo "Not in state (skip): $addr"
+          done
+
       - name: Terraform Plan
         id: plan
         env:
