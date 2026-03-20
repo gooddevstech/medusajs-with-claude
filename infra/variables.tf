@@ -67,17 +67,11 @@ variable "aurora_max_capacity" {
   default     = 4.0
 }
 
-# ElastiCache Serverless Valkey Configuration
-variable "valkey_max_storage_gb" {
-  description = "Maximum data storage in GB for Valkey serverless cache"
-  type        = number
-  default     = 5
-}
-
-variable "valkey_max_ecpu_per_second" {
-  description = "Maximum ECPUs per second for Valkey serverless cache"
-  type        = number
-  default     = 1000
+# ElastiCache Provisioned Valkey Configuration
+variable "elasticache_node_type" {
+  description = "ElastiCache node type for Valkey"
+  type        = string
+  default     = "cache.t4g.micro"
 }
 
 # Lambda Configuration

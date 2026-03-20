@@ -2,10 +2,9 @@
 
 locals {
   rds_endpoint    = aws_rds_cluster.postgres.endpoint
-  valkey_endpoint = aws_elasticache_serverless_cache.valkey.endpoint[0].address
-  valkey_port     = aws_elasticache_serverless_cache.valkey.endpoint[0].port
+  valkey_endpoint = aws_elasticache_replication_group.valkey.primary_endpoint_address
   database_url    = "postgresql://${var.db_username}:${var.db_password}@${local.rds_endpoint}:5432/${var.db_name}"
-  redis_url       = "rediss://${local.valkey_endpoint}:${local.valkey_port}"
+  redis_url       = "rediss://${local.valkey_endpoint}:6379"
 }
 
 resource "aws_ssm_parameter" "database_host" {

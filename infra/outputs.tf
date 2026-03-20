@@ -94,16 +94,11 @@ output "rds_port" {
   value       = aws_rds_cluster.postgres.port
 }
 
-# Valkey Serverless Outputs
+# Valkey Outputs
 output "valkey_endpoint" {
-  description = "ElastiCache Serverless Valkey endpoint"
-  value       = aws_elasticache_serverless_cache.valkey.endpoint[0].address
+  description = "ElastiCache Valkey primary endpoint"
+  value       = aws_elasticache_replication_group.valkey.primary_endpoint_address
   sensitive   = true
-}
-
-output "valkey_port" {
-  description = "ElastiCache Serverless Valkey port"
-  value       = aws_elasticache_serverless_cache.valkey.endpoint[0].port
 }
 
 # S3 Outputs
