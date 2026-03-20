@@ -44,6 +44,7 @@ resource "aws_apigatewayv2_stage" "backend" {
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.backend_apigw.arn
+    format          = "$context.requestId $context.status $context.error.message"
   }
 
   tags = merge(var.tags, { Name = "${var.project_name}-backend-stage" })
@@ -134,6 +135,7 @@ resource "aws_apigatewayv2_stage" "storefront" {
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.storefront_apigw.arn
+    format          = "$context.requestId $context.status $context.error.message"
   }
 
   tags = merge(var.tags, { Name = "${var.project_name}-storefront-stage" })

@@ -67,7 +67,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_backend_duration" {
   metric_name         = "Duration"
   namespace           = "AWS/Lambda"
   period              = 300
-  statistic           = "p95"
+  extended_statistic  = "p95"
   threshold           = 20000
   alarm_description   = "Alert when backend Lambda p95 duration exceeds 20s"
   alarm_actions       = [aws_sns_topic.alerts.arn]
