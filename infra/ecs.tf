@@ -85,6 +85,7 @@ data "aws_ssm_parameter" "lambda_payrex_publishable_key" {
 locals {
   backend_env = {
     NODE_ENV                     = "production"
+    HOME                         = "/tmp"
     PORT                         = "9000"
     AWS_LWA_PORT                 = "9000"
     AWS_LWA_READINESS_CHECK_PATH = "/health"
@@ -148,6 +149,7 @@ resource "aws_lambda_function" "backend_migrate" {
   environment {
     variables = {
       NODE_ENV      = "production"
+      HOME          = "/tmp"
       DATABASE_URL  = data.aws_ssm_parameter.lambda_database_url.value
       REDIS_URL     = data.aws_ssm_parameter.lambda_redis_url.value
       JWT_SECRET    = data.aws_ssm_parameter.lambda_jwt_secret.value
