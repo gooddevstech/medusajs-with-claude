@@ -36,8 +36,8 @@ resource "aws_rds_cluster" "postgres" {
   skip_final_snapshot       = false
   final_snapshot_identifier = "${var.project_name}-postgres-final"
 
-  enabled_cloudwatch_logs_exports      = ["postgresql"]
-  iam_database_authentication_enabled  = true
+  enabled_cloudwatch_logs_exports     = ["postgresql"]
+  iam_database_authentication_enabled = true
 
   tags = merge(var.tags, { Name = "${var.project_name}-postgres" })
 }
