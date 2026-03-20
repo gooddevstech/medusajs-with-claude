@@ -45,6 +45,23 @@ COPY --from=builder /app/.medusa/server/public/admin ./public/admin
 COPY --from=builder /app/medusa-config.ts ./
 COPY --from=builder /app/tsconfig.json ./
 
+# Pre-create migrations directories for modules that have none.
+# Medusa's migration runner does mkdir on these paths; Lambda's image
+# filesystem is read-only at runtime, so the mkdir fails and the whole
+# migration exits with error, leaving link tables (e.g. region_payment_provider)
+# uncreated. Creating them here at build time avoids that.
+RUN mkdir -p \
+    src/modules/payrex/migrations \
+    node_modules/@medusajs/auth-emailpass/dist/migrations \
+    node_modules/@medusajs/fulfillment-manual/dist/migrations \
+    node_modules/@medusajs/notification-local/dist/migrations \
+    node_modules/@medusajs/cache-inmemory/dist/migrations \
+    node_modules/@medusajs/event-bus-local/dist/migrations \
+    node_modules/@medusajs/locking/dist/migrations \
+    node_modules/@medusajs/file/dist/migrations \
+    node_modules/@medusajs/event-bus-redis/dist/migrations \
+    node_modules/@medusajs/cache-redis/dist/migrations
+
 # Use dumb-init to handle signals
 ENTRYPOINT ["dumb-init", "--"]
 
