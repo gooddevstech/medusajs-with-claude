@@ -80,53 +80,17 @@ variable "valkey_max_ecpu_per_second" {
   default     = 1000
 }
 
-# ECS Configuration
-variable "backend_cpu" {
-  description = "CPU units for backend ECS task"
-  type        = number
-  default     = 256
-}
-
+# Lambda Configuration
 variable "backend_memory" {
-  description = "Memory (MB) for backend ECS task"
+  description = "Memory (MB) for backend Lambda function"
   type        = number
-  default     = 512
-}
-
-variable "backend_desired_count" {
-  description = "Desired number of backend tasks"
-  type        = number
-  default     = 1
-}
-
-variable "backend_max_capacity" {
-  description = "Maximum number of backend tasks for auto-scaling"
-  type        = number
-  default     = 4
-}
-
-variable "storefront_cpu" {
-  description = "CPU units for storefront ECS task"
-  type        = number
-  default     = 256
+  default     = 1024
 }
 
 variable "storefront_memory" {
-  description = "Memory (MB) for storefront ECS task"
+  description = "Memory (MB) for storefront Lambda function"
   type        = number
-  default     = 512
-}
-
-variable "storefront_desired_count" {
-  description = "Desired number of storefront tasks"
-  type        = number
-  default     = 1
-}
-
-variable "storefront_max_capacity" {
-  description = "Maximum number of storefront tasks for auto-scaling"
-  type        = number
-  default     = 4
+  default     = 1024
 }
 
 # Domain Configuration
@@ -169,7 +133,7 @@ variable "revalidate_secret" {
 }
 
 variable "payrex_publishable_key" {
-  description = "PayRex client-side publishable key — it's used in the storefront to initialize the PayRex payment UI"
+  description = "PayRex client-side publishable key — used in the storefront to initialize the PayRex payment UI"
   type        = string
   sensitive   = true
   default     = "pk_placeholder"
@@ -183,7 +147,7 @@ variable "payrex_secret_key" {
 }
 
 variable "payrex_webhook_secret" {
-  description = "PayRex webhook signing or secret key to for verification of incoming webhook events"
+  description = "PayRex webhook signing key for verification of incoming webhook events"
   type        = string
   sensitive   = true
   default     = "whsk_placeholder"

@@ -9,20 +9,40 @@ output "public_subnets" {
   value       = data.aws_subnets.public_default.ids
 }
 
-# ECS Outputs
-output "ecs_cluster_id" {
-  description = "ECS cluster ID"
-  value       = module.ecs.cluster_id
+output "private_subnets" {
+  description = "List of private subnet IDs (used by Lambda)"
+  value       = aws_subnet.private[*].id
 }
 
-output "ecs_cluster_name" {
-  description = "ECS cluster name"
-  value       = module.ecs.cluster_name
+# Lambda Outputs
+output "backend_lambda_name" {
+  description = "Backend Lambda function name"
+  value       = aws_lambda_function.backend.function_name
 }
 
-output "ecs_cluster_arn" {
-  description = "ECS cluster ARN"
-  value       = module.ecs.cluster_arn
+output "backend_lambda_arn" {
+  description = "Backend Lambda function ARN"
+  value       = aws_lambda_function.backend.arn
+}
+
+output "storefront_lambda_name" {
+  description = "Storefront Lambda function name"
+  value       = aws_lambda_function.storefront.function_name
+}
+
+output "storefront_lambda_arn" {
+  description = "Storefront Lambda function ARN"
+  value       = aws_lambda_function.storefront.arn
+}
+
+output "backend_migrate_lambda_name" {
+  description = "Backend migration Lambda function name"
+  value       = aws_lambda_function.backend_migrate.function_name
+}
+
+output "backend_scripts_lambda_name" {
+  description = "Backend scripts Lambda function name"
+  value       = aws_lambda_function.backend_scripts.function_name
 }
 
 # ECR Outputs
@@ -36,30 +56,25 @@ output "storefront_repository_url" {
   value       = aws_ecr_repository.storefront.repository_url
 }
 
-# ALB Outputs
-output "alb_dns_name" {
-  description = "ALB DNS name"
-  value       = module.alb.dns_name
+# API Gateway Outputs
+output "backend_api_id" {
+  description = "Backend API Gateway HTTP API ID"
+  value       = aws_apigatewayv2_api.backend.id
 }
 
-output "alb_arn" {
-  description = "ALB ARN"
-  value       = module.alb.arn
+output "storefront_api_id" {
+  description = "Storefront API Gateway HTTP API ID"
+  value       = aws_apigatewayv2_api.storefront.id
 }
 
-output "alb_zone_id" {
-  description = "ALB Zone ID"
-  value       = module.alb.zone_id
+output "backend_api_endpoint" {
+  description = "Backend API Gateway default endpoint"
+  value       = aws_apigatewayv2_api.backend.api_endpoint
 }
 
-output "backend_target_group_arn" {
-  description = "Backend target group ARN"
-  value       = module.alb.target_groups["backend"].arn
-}
-
-output "storefront_target_group_arn" {
-  description = "Storefront target group ARN"
-  value       = module.alb.target_groups["storefront"].arn
+output "storefront_api_endpoint" {
+  description = "Storefront API Gateway default endpoint"
+  value       = aws_apigatewayv2_api.storefront.api_endpoint
 }
 
 # Aurora Serverless v2 Outputs
@@ -135,13 +150,8 @@ output "domain_urls" {
   }
 }
 
-# ECS Services Outputs
-output "backend_service_name" {
-  description = "Backend ECS service name"
-  value       = aws_ecs_service.backend.name
-}
-
-output "storefront_service_name" {
-  description = "Storefront ECS service name"
-  value       = aws_ecs_service.storefront.name
+# NAT Gateway
+output "nat_gateway_ip" {
+  description = "NAT Gateway public IP (for allowlisting outbound Lambda traffic)"
+  value       = aws_eip.nat.public_ip
 }

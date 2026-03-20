@@ -56,109 +56,85 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Download ECS task definition
-        run: |
-          aws ecs describe-task-definition \
-            --task-definition tindaph-backend \
-            --query taskDefinition > task-definition.json
-
-      - name: Update ECS task definition with new image
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: backend
-          image: ${{ steps.image.outputs.image }}
-
       - name: Run database migration
         id: migration
         continue-on-error: true
         run: |
-          SUBNET=$(aws ec2 describe-subnets \
+          START_TIME=$(date -u +%s000)
+
+          aws lambda update-function-code \
+            --function-name tindaph-backend-migrate \
+            --image-uri ${{ steps.image.outputs.image }} \
             --region ${{ secrets.AWS_REGION }} \
-            --filters Name=defaultForAz,Values=true \
-            --query 'Subnets[0].SubnetId' --output text)
-          SG=$(aws ec2 describe-security-groups \
+            --no-cli-pager
+          aws lambda wait function-updated \
+            --function-name tindaph-backend-migrate \
+            --region ${{ secrets.AWS_REGION }}
+
+          RESULT=$(aws lambda invoke \
+            --function-name tindaph-backend-migrate \
             --region ${{ secrets.AWS_REGION }} \
-            --filters Name=tag:Name,Values=*ecs-tasks-sg \
-            --query 'SecurityGroups[0].GroupId' --output text)
+            --log-type Tail \
+            --cli-binary-format raw-in-base64-out \
+            /tmp/migration-output.json \
+            --query 'FunctionError' --output text)
 
-          TASK_ARN=$(aws ecs run-task \
-            --cluster tindaph-ecs \
-            --task-definition tindaph-backend \
-            --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[$SUBNET],securityGroups=[$SG],assignPublicIp=ENABLED}" \
-            --overrides "containerOverrides=[{name=backend,command=[\"yarn\",\"medusa\",\"db:migrate\"]}]" \
-            --query 'tasks[0].taskArn' \
-            --output text)
+          cat /tmp/migration-output.json
+          echo "Migration FunctionError: $RESULT"
 
-          echo "Migration task: $TASK_ARN"
-          aws ecs wait tasks-stopped --cluster tindaph-ecs --tasks $TASK_ARN || true
+          if [ "$RESULT" != "None" ] && [ -n "$RESULT" ]; then
+            echo "::warning::Migration returned a FunctionError: $RESULT"
+          fi
 
-          EXIT_CODE=$(aws ecs describe-tasks \
-            --cluster tindaph-ecs \
-            --tasks $TASK_ARN \
-            --query 'tasks[0].containers[0].exitCode' \
-            --output text)
-
-          echo "Migration exit code: $EXIT_CODE"
-          [ "$EXIT_CODE" = "0" ] || echo "::warning::Migration exited with code $EXIT_CODE"
-
-      - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: tindaph-backend
-          cluster: tindaph-ecs
-          wait-for-service-stability: true
-
-      - name: Verify service health
+      - name: Update backend Lambda function code
         run: |
-          RUNNING_COUNT=$(aws ecs describe-services \
-            --cluster tindaph-ecs \
-            --services tindaph-backend \
-            --query 'services[0].runningCount' \
-            --output text)
+          aws lambda update-function-code \
+            --function-name tindaph-backend \
+            --image-uri ${{ steps.image.outputs.image }} \
+            --region ${{ secrets.AWS_REGION }} \
+            --no-cli-pager
+          aws lambda wait function-updated \
+            --function-name tindaph-backend \
+            --region ${{ secrets.AWS_REGION }}
 
-          DESIRED_COUNT=$(aws ecs describe-services \
-            --cluster tindaph-ecs \
-            --services tindaph-backend \
-            --query 'services[0].desiredCount' \
-            --output text)
+      - name: Verify backend Lambda is active
+        run: |
+          STATE=$(aws lambda get-function \
+            --function-name tindaph-backend \
+            --region ${{ secrets.AWS_REGION }} \
+            --query 'Configuration.State' --output text)
 
-          echo "Backend service: $RUNNING_COUNT/$DESIRED_COUNT tasks running"
+          echo "Backend Lambda state: $STATE"
 
-          if [ "$RUNNING_COUNT" -ne "$DESIRED_COUNT" ]; then
+          if [ "$STATE" != "Active" ]; then
+            echo "::error::Backend Lambda is not Active (state: $STATE)"
             exit 1
           fi
 
       - name: Ensure publishable key is linked to sales channel
         id: publishable-key
         run: |
-          SUBNET=$(aws ec2 describe-subnets \
-            --region ${{ secrets.AWS_REGION }} \
-            --filters Name=defaultForAz,Values=true \
-            --query 'Subnets[0].SubnetId' --output text)
-          SG=$(aws ec2 describe-security-groups \
-            --region ${{ secrets.AWS_REGION }} \
-            --filters Name=tag:Name,Values=*ecs-tasks-sg \
-            --query 'SecurityGroups[0].GroupId' --output text)
-
           START_TIME=$(date -u +%s000)
 
-          TASK_ARN=$(aws ecs run-task \
-            --cluster tindaph-ecs \
-            --task-definition tindaph-backend \
-            --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[$SUBNET],securityGroups=[$SG],assignPublicIp=ENABLED}" \
-            --overrides "containerOverrides=[{name=backend,command=[\"yarn\",\"medusa\",\"exec\",\"./src/scripts/create-publishable-key.ts\"]}]" \
-            --query 'tasks[0].taskArn' --output text)
+          aws lambda update-function-code \
+            --function-name tindaph-backend-scripts \
+            --image-uri ${{ steps.image.outputs.image }} \
+            --region ${{ secrets.AWS_REGION }} \
+            --no-cli-pager
+          aws lambda wait function-updated \
+            --function-name tindaph-backend-scripts \
+            --region ${{ secrets.AWS_REGION }}
 
-          echo "Publishable key task: $TASK_ARN"
-          aws ecs wait tasks-stopped --cluster tindaph-ecs --tasks $TASK_ARN
+          aws lambda invoke \
+            --function-name tindaph-backend-scripts \
+            --region ${{ secrets.AWS_REGION }} \
+            --log-type Tail \
+            --cli-binary-format raw-in-base64-out \
+            /tmp/scripts-output.json \
+            --no-cli-pager
 
           PK=$(aws logs filter-log-events \
-            --log-group-name /ecs/tindaph-backend \
+            --log-group-name /aws/lambda/tindaph-backend-scripts \
             --start-time $START_TIME \
             --filter-pattern "pk_" \
             --query 'events[0].message' --output text | grep -o 'pk_[a-f0-9]*')
@@ -199,5 +175,4 @@ jobs:
         run: |
           echo "✅ Backend deployment completed successfully"
           echo "Image: ${{ steps.image.outputs.image }}"
-          echo "Service: tindaph-backend"
-          echo "Cluster: tindaph-ecs"
+          echo "Function: tindaph-backend"

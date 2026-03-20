@@ -65,45 +65,28 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Download ECS task definition
+      - name: Update storefront Lambda function code
         run: |
-          aws ecs describe-task-definition \
-            --task-definition tindaph-storefront \
-            --query taskDefinition > task-definition.json
+          aws lambda update-function-code \
+            --function-name tindaph-storefront \
+            --image-uri ${{ steps.image.outputs.image }} \
+            --region ${{ secrets.AWS_REGION }} \
+            --no-cli-pager
+          aws lambda wait function-updated \
+            --function-name tindaph-storefront \
+            --region ${{ secrets.AWS_REGION }}
 
-      - name: Update ECS task definition with new image
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: storefront
-          image: ${{ steps.image.outputs.image }}
-
-      - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: tindaph-storefront
-          cluster: tindaph-ecs
-          wait-for-service-stability: true
-
-      - name: Verify service health
+      - name: Verify storefront Lambda is active
         run: |
-          RUNNING_COUNT=$(aws ecs describe-services \
-            --cluster tindaph-ecs \
-            --services tindaph-storefront \
-            --query 'services[0].runningCount' \
-            --output text)
+          STATE=$(aws lambda get-function \
+            --function-name tindaph-storefront \
+            --region ${{ secrets.AWS_REGION }} \
+            --query 'Configuration.State' --output text)
 
-          DESIRED_COUNT=$(aws ecs describe-services \
-            --cluster tindaph-ecs \
-            --services tindaph-storefront \
-            --query 'services[0].desiredCount' \
-            --output text)
+          echo "Storefront Lambda state: $STATE"
 
-          echo "Storefront service: $RUNNING_COUNT/$DESIRED_COUNT tasks running"
-
-          if [ "$RUNNING_COUNT" -ne "$DESIRED_COUNT" ]; then
+          if [ "$STATE" != "Active" ]; then
+            echo "::error::Storefront Lambda is not Active (state: $STATE)"
             exit 1
           fi
 
@@ -111,5 +94,4 @@ jobs:
         run: |
           echo "✅ Storefront deployment completed successfully"
           echo "Image: ${{ steps.image.outputs.image }}"
-          echo "Service: tindaph-storefront"
-          echo "Cluster: tindaph-ecs"
+          echo "Function: tindaph-storefront"

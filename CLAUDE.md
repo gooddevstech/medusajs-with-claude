@@ -7,10 +7,12 @@ Tindaph is a production-ready e-commerce platform ("The Bloom Shop" - online flo
 
 ### Architecture
 ```
-Route53 (tindaph.app) → ALB (HTTPS/ACM)
-  ├── /api/* → Backend ECS (port 9000)
-  └── /* → Storefront ECS (port 8000)
-Backend → RDS PostgreSQL 16 + ElastiCache Redis 7
+Route53 (tindaph.app) → API Gateway HTTP API (custom domains)
+  ├── api.tindaph.app → Lambda backend (port 9000, Lambda Web Adapter)
+  ├── admin.tindaph.app → Lambda backend (port 9000, Lambda Web Adapter)
+  └── tindaph.app → Lambda storefront (port 8000, Lambda Web Adapter)
+Lambda → private subnets → NAT GW → internet
+Lambda → VPC → RDS PostgreSQL 16 + ElastiCache Valkey
 Media → S3 → CloudFront CDN
 ```
 
@@ -53,7 +55,9 @@ Media → S3 → CloudFront CDN
 | Admin UI | Vite | 5.4.14 | Admin dashboard with HMR |
 | Storefront | Next.js | 15.3.9 | Customer-facing store |
 | Container Runtime | Docker | - | Containerization |
-| Orchestration | Docker Compose | - | Multi-container management |
+| Compute (prod) | AWS Lambda | - | Serverless container execution |
+| API Routing (prod) | API Gateway HTTP API | - | HTTP routing to Lambda |
+| Orchestration | Docker Compose | - | Local multi-container management |
 | Package Manager | Yarn | 4.12.0 | Dependency management |
 | Base Image | Node.js | 20-alpine | Runtime environment |
 

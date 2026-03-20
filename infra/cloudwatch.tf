@@ -1,104 +1,83 @@
-# SNS Topic for Alarms (optional, for notifications)
+# SNS Topic for Alarms
 resource "aws_sns_topic" "alerts" {
   name_prefix = "${var.project_name}-alerts-"
 
   tags = merge(var.tags, { Name = "${var.project_name}-alerts-topic" })
 }
 
-# ALB Target Group Health Check Alarms
-resource "aws_cloudwatch_metric_alarm" "alb_backend_unhealthy_hosts" {
-  alarm_name          = "${var.project_name}-backend-tg-unhealthy-hosts"
+# Lambda Backend Error Rate Alarm
+resource "aws_cloudwatch_metric_alarm" "lambda_backend_errors" {
+  alarm_name          = "${var.project_name}-backend-lambda-errors"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 2
-  metric_name         = "UnHealthyHostCount"
-  namespace           = "AWS/ApplicationELB"
-  period              = 60
-  statistic           = "Average"
-  threshold           = 1
-  alarm_description   = "Alert when backend target group has unhealthy hosts"
-  alarm_actions       = [aws_sns_topic.alerts.arn]
-
-  dimensions = {
-    TargetGroup  = module.alb.target_groups["backend"].arn_suffix
-    LoadBalancer = module.alb.arn_suffix
-  }
-}
-
-resource "aws_cloudwatch_metric_alarm" "alb_storefront_unhealthy_hosts" {
-  alarm_name          = "${var.project_name}-storefront-tg-unhealthy-hosts"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "UnHealthyHostCount"
-  namespace           = "AWS/ApplicationELB"
-  period              = 60
-  statistic           = "Average"
-  threshold           = 1
-  alarm_description   = "Alert when storefront target group has unhealthy hosts"
-  alarm_actions       = [aws_sns_topic.alerts.arn]
-
-  dimensions = {
-    TargetGroup  = module.alb.target_groups["storefront"].arn_suffix
-    LoadBalancer = module.alb.arn_suffix
-  }
-}
-
-# ALB 5xx Errors Alarm
-resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
-  alarm_name          = "${var.project_name}-alb-5xx-errors"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "HTTPCode_Target_5XX_Count"
-  namespace           = "AWS/ApplicationELB"
+  metric_name         = "Errors"
+  namespace           = "AWS/Lambda"
   period              = 60
   statistic           = "Sum"
   threshold           = 5
-  alarm_description   = "Alert when ALB 5xx error count is high"
+  alarm_description   = "Alert when backend Lambda error count is high"
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
-    LoadBalancer = module.alb.arn_suffix
+    FunctionName = aws_lambda_function.backend.function_name
   }
 }
 
-# ECS Backend CPU Utilization Alarm
-resource "aws_cloudwatch_metric_alarm" "ecs_backend_cpu_high" {
-  alarm_name          = "${var.project_name}-backend-cpu-high"
+# Lambda Storefront Error Rate Alarm
+resource "aws_cloudwatch_metric_alarm" "lambda_storefront_errors" {
+  alarm_name          = "${var.project_name}-storefront-lambda-errors"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/ECS"
-  period              = 300
-  statistic           = "Average"
-  threshold           = 80
-  alarm_description   = "Alert when backend ECS CPU utilization is high"
+  metric_name         = "Errors"
+  namespace           = "AWS/Lambda"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 5
+  alarm_description   = "Alert when storefront Lambda error count is high"
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
-    ClusterName = module.ecs.cluster_name
-    ServiceName = aws_ecs_service.backend.name
+    FunctionName = aws_lambda_function.storefront.function_name
   }
 }
 
-# ECS Storefront CPU Utilization Alarm
-resource "aws_cloudwatch_metric_alarm" "ecs_storefront_cpu_high" {
-  alarm_name          = "${var.project_name}-storefront-cpu-high"
+# Lambda Backend Throttle Alarm
+resource "aws_cloudwatch_metric_alarm" "lambda_backend_throttles" {
+  alarm_name          = "${var.project_name}-backend-lambda-throttles"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/ECS"
-  period              = 300
-  statistic           = "Average"
-  threshold           = 80
-  alarm_description   = "Alert when storefront ECS CPU utilization is high"
+  metric_name         = "Throttles"
+  namespace           = "AWS/Lambda"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 10
+  alarm_description   = "Alert when backend Lambda is being throttled"
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
-    ClusterName = module.ecs.cluster_name
-    ServiceName = aws_ecs_service.storefront.name
+    FunctionName = aws_lambda_function.backend.function_name
   }
 }
 
-# Aurora Serverless v2 CPU Utilization Alarm (per instance)
+# Lambda Backend Duration Alarm (approaching 29s timeout)
+resource "aws_cloudwatch_metric_alarm" "lambda_backend_duration" {
+  alarm_name          = "${var.project_name}-backend-lambda-duration"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "Duration"
+  namespace           = "AWS/Lambda"
+  period              = 300
+  statistic           = "p95"
+  threshold           = 20000
+  alarm_description   = "Alert when backend Lambda p95 duration exceeds 20s"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+
+  dimensions = {
+    FunctionName = aws_lambda_function.backend.function_name
+  }
+}
+
+# Aurora Serverless v2 CPU Utilization Alarm
 resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
   alarm_name          = "${var.project_name}-aurora-cpu-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -116,7 +95,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
   }
 }
 
-# Aurora Serverless v2 Capacity Alarm (ACU usage approaching max)
+# Aurora Serverless v2 Capacity Alarm
 resource "aws_cloudwatch_metric_alarm" "aurora_capacity_high" {
   alarm_name          = "${var.project_name}-aurora-capacity-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
